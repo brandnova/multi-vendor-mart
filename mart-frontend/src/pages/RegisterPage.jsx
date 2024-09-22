@@ -2,28 +2,41 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../redux/authSlice';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    username: '',
+    email: '',
+    password: '',
+    confirm_password: '',
+    is_vendor: false,
+  });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
 
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirm_password) {
       alert("Passwords don't match");
       return;
     }
-    const result = await dispatch(register({ email, password }));
+    const result = await dispatch(register(formData));
     if (!result.error) {
-      navigate('/dashboard');
+      navigate('/registration-success');
     }
   };
 
@@ -33,14 +46,50 @@ export default function RegisterPage() {
         <h3 className="text-2xl font-bold text-center">Register a new account</h3>
         <form onSubmit={handleSubmit}>
           <div className="mt-4">
-            <div>
+            <div className="flex space-x-4">
+              <div className="w-1/2">
+                <label className="block" htmlFor="first_name">First Name</label>
+                <Input
+                  type="text"
+                  name="first_name"
+                  id="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+              <div className="w-1/2">
+                <label className="block" htmlFor="last_name">Last Name</label>
+                <Input
+                  type="text"
+                  name="last_name"
+                  id="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="block" htmlFor="username">Username</label>
+              <Input
+                type="text"
+                name="username"
+                id="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+              />
+            </div>
+            <div className="mt-4">
               <label className="block" htmlFor="email">Email</label>
               <Input
                 type="email"
-                placeholder="Email"
+                name="email"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 required
                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
@@ -49,25 +98,37 @@ export default function RegisterPage() {
               <label className="block" htmlFor="password">Password</label>
               <Input
                 type="password"
-                placeholder="Password"
+                name="password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 required
                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
             </div>
             <div className="mt-4">
-              <label className="block" htmlFor="confirmPassword">Confirm Password</label>
+              <label className="block" htmlFor="confirm_password">Confirm Password</label>
               <Input
                 type="password"
-                placeholder="Confirm Password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                name="confirm_password"
+                id="confirm_password"
+                value={formData.confirm_password}
+                onChange={handleChange}
                 required
                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
+            </div>
+            <div className="mt-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="is_vendor"
+                  checked={formData.is_vendor}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                Register as a vendor
+              </label>
             </div>
             <div className="flex items-baseline justify-between">
               <Button type="submit" disabled={loading} className="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900">
@@ -78,10 +139,9 @@ export default function RegisterPage() {
         </form>
         {error && (
           <Alert variant="destructive" className="mt-4">
-            <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
-              {error}
+              {typeof error === 'object' ? JSON.stringify(error) : error}
             </AlertDescription>
           </Alert>
         )}

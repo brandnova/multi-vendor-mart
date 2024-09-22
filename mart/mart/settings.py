@@ -144,8 +144,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # DEFAULT_FROM_EMAIL = 'your-email@gmail.com'  # Default sender for emails
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False  # MailHog does not use TLS by default
+EMAIL_USE_SSL = False  # MailHog does not use SSL by default
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'from@eg.com'
+
+
 # Email configuration for development (console backend)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 # CORS settings

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
+import Logo from '../assets/react.svg';
 
 const Layout = ({ children }) => {
   return (
@@ -8,7 +9,7 @@ const Layout = ({ children }) => {
       <header className="bg-blue-600 text-white p-4">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center">
-            <img src="/logo.svg" alt="Logo" className="h-8 w-8 mr-2" />
+            <img src="Logo" alt="Logo" className="h-8 w-8 mr-2" />
             <span className="text-xl font-bold">Your Site Name</span>
           </Link>
           <nav>

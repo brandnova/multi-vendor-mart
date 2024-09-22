@@ -1,18 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const initialState = {
-  user: null,
-  isAuthenticated: false,
-  loading: false,
-  error: null,
-};
+const API_BASE_URL = 'http://127.0.0.1:8000'; // Update this to your backend URL
 
 export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/accounts/register/', userData);
+      const response = await axios.post(`${API_BASE_URL}/accounts/register/`, userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -24,7 +19,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/accounts/token/', credentials);
+      const response = await axios.post(`${API_BASE_URL}/accounts/token/`, credentials);
       localStorage.setItem('accessToken', response.data.access);
       localStorage.setItem('refreshToken', response.data.refresh);
       return response.data;
@@ -33,6 +28,13 @@ export const login = createAsyncThunk(
     }
   }
 );
+
+const initialState = {
+  user: null,
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+};
 
 const authSlice = createSlice({
   name: 'auth',
@@ -52,7 +54,6 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.isAuthenticated = true;
         state.user = action.payload;
       })
       .addCase(register.rejected, (state, action) => {

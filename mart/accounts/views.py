@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 from .models import EmailVerificationToken
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
@@ -27,3 +29,10 @@ class VerifyEmailView(generics.GenericAPIView):
         user.save()
         verification_token.delete()
         return Response({"message": "Email verified successfully"}, status=status.HTTP_200_OK)
+    
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)

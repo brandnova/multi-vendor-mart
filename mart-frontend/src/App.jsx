@@ -1,40 +1,21 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import RegistrationSuccessPage from './pages/RegistrationSuccessPage';
+import AuthPage from './pages/AuthPage';
+import VendorDashboard from './pages/VendorDashboard';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 
-
-// Placeholder components for other pages
-const StoresPage = () => <div>Browse Stores Page</div>;
-const BecomeVendorPage = () => <div>Become a Vendor Page</div>;
-const TermsPage = () => <div>Terms and Conditions Page</div>;
-const PrivacyPage = () => <div>Privacy Policy Page</div>;
-const Dashboard = () => <div>Dashboard Page</div>;
-
-function App() {
+const App = () => {
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/registration-success" element={<RegistrationSuccessPage />} />
-          <Route path="/verify-email/:token" element={<EmailVerificationPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/stores" element={<StoresPage />} />
-          <Route path="/become-vendor" element={<BecomeVendorPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/verify-email/:token" element={<EmailVerificationPage />} />
+        <Route path="/dashboard" element={<VendorDashboard />} />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;
-

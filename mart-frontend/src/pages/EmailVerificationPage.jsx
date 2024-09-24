@@ -1,70 +1,117 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
-import { Button } from '../components/ui/button';
+import { verifyEmail } from '../config/api';
 
-export default function EmailVerificationPage() {
-  const [verificationStatus, setVerificationStatus] = useState('pending');
+const EmailVerificationPage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const verifyEmail = async () => {
+    const performEmailVerification = async () => {
       try {
-        await axios.get(`http://127.0.0.1:8000/accounts/verify-email/${token}/`);
-        setVerificationStatus('success');
-      } catch (error) {
-        console.error('Verification failed:', error);
-        setVerificationStatus('error');
+        await verifyEmail(token);
+        navigate('/dashboard');
+      } catch (err) {
+        setError('Failed to verify email. Please try again later.');
+        console.error('Error verifying email:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    verifyEmail();
-  }, [token]);
+    performEmailVerification();
+  }, [token, navigate]);
 
-  const handleContinue = () => {
-    navigate('/login');
-  };
+  if (isLoading) return <div>Verifying your email...</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center">Email Verification</h1>
-        
-        {verificationStatus === 'pending' && (
-          <Alert>
-            <AlertTitle>Verifying your email</AlertTitle>
-            <AlertDescription>
-              Please wait while we verify your email address...
-            </AlertDescription>
-          </Alert>
-        )}
+  return null;
+};
 
-        {verificationStatus === 'success' && (
-          <Alert variant="success">
-            <AlertTitle>Email Verified!</AlertTitle>
-            <AlertDescription>
-              Your email has been successfully verified. You can now log in to your account.
-            </AlertDescription>
-          </Alert>
-        )}
+export default EmailVerificationPage;
 
-        {verificationStatus === 'error' && (
-          <Alert variant="destructive">
-            <AlertTitle>Verification Failed</AlertTitle>
-            <AlertDescription>
-              We couldn't verify your email. The link may have expired or is invalid.
-            </AlertDescription>
-          </Alert>
-        )}
 
-        {verificationStatus !== 'pending' && (
-          <Button onClick={handleContinue} className="w-full">
-            {verificationStatus === 'success' ? 'Continue to Login' : 'Try Again'}
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
+// import React, { useState, useEffect } from 'react';
+// import { useParams, useNavigate } from 'react-router-dom';
+// import { verifyEmail } from '../config/api';
+
+// const EmailVerificationPage = () => {
+//   const { token } = useParams();
+//   const navigate = useNavigate();
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [success, setSuccess] = useState(false);
+
+//   useEffect(() => {
+//     const performEmailVerification = async () => {
+//       try {
+//         await verifyEmail(token);
+//         setSuccess(true);
+//       } catch (err) {
+//         setError('Failed to verify email. Please try again later.');
+//         console.error('Error verifying email:', err);
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     performEmailVerification();
+//   }, [token, navigate]);
+
+//   const handleGoHome = () => navigate('/');
+//   const handleGoDashboard = () => navigate('/dashboard');
+
+//   if (isLoading) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen">
+//         <div className="text-center">
+//           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+//           <p className="mt-4 text-gray-700">Verifying your email...</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (error) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen">
+//         <div className="text-center">
+//           <div className="text-red-600">{error}</div>
+//           <button 
+//             onClick={handleGoHome} 
+//             className="bg-blue-500 text-white px-4 py-2 mt-4 rounded hover:bg-blue-700">
+//             Go Home
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   if (success) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen">
+//         <div className="text-center">
+//           <div className="text-green-600">Email verified successfully!</div>
+//           <div className="mt-4">
+//             <button 
+//               onClick={handleGoHome} 
+//               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
+//               Go Home
+//             </button>
+//             <button 
+//               onClick={handleGoDashboard} 
+//               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
+//               Go to Dashboard
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return null;
+// };
+
+// export default EmailVerificationPage;

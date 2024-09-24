@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Button, Input, Alert } from './UIComponents';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../config/api';
+import { Card, CardContent, CardHeader, Button, Input } from './UIComponents';
 
-const BankDetailsSection = ({ bankDetails, handleCreateBankDetail, handleEditBankDetail, handleDeleteBankDetail }) => {
+export default function BankDetailsSection() {
+  const [bankDetails, setBankDetails] = useState([]);
   const [newBankDetail, setNewBankDetail] = useState({
     bank_name: '',
     account_number: '',
@@ -11,24 +12,66 @@ const BankDetailsSection = ({ bankDetails, handleCreateBankDetail, handleEditBan
   });
   const [editingBankDetail, setEditingBankDetail] = useState(null);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBankDetails();
+  }, []);
+
+  const fetchBankDetails = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/stores/bank-details/list/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBankDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching bank details:', error);
+      setError('Failed to fetch bank details. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewBankDetail((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSaveBankDetail = async () => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+
     try {
+      let response;
       if (editingBankDetail) {
-        await handleEditBankDetail(editingBankDetail.id, newBankDetail);
-        setEditingBankDetail(null);
+        response = await axios.put(`${API_URL}/stores/bank-details/${editingBankDetail.id}/`, newBankDetail, { headers });
+        setBankDetails(bankDetails.map(detail => detail.id === editingBankDetail.id ? response.data : detail));
       } else {
-        await handleCreateBankDetail(newBankDetail);
+        response = await axios.post(`${API_URL}/stores/bank-details/`, newBankDetail, { headers });
+        setBankDetails([...bankDetails, response.data]);
       }
       setNewBankDetail({ bank_name: '', account_number: '', account_name: '' });
-    } catch (err) {
+      setEditingBankDetail(null);
+      setError(null);
+    } catch (error) {
+      console.error('Error saving bank details:', error);
       setError('Failed to save bank details. Please try again.');
+    }
+  };
+
+  const handleDeleteBankDetail = async (bankDetailId) => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      await axios.delete(`${API_URL}/stores/bank-details/${bankDetailId}/`, { headers });
+      setBankDetails(bankDetails.filter(detail => detail.id !== bankDetailId));
+      setError(null);
+    } catch (error) {
+      console.error('Error deleting bank details:', error);
+      setError('Failed to delete bank details. Please try again.');
     }
   };
 
@@ -41,54 +84,48 @@ const BankDetailsSection = ({ bankDetails, handleCreateBankDetail, handleEditBan
     });
   };
 
-  const cancelEditing = () => {
-    setEditingBankDetail(null);
-    setNewBankDetail({ bank_name: '', account_number: '', account_name: '' });
-  };
+  if (isLoading) {
+    return <div>Loading bank details...</div>;
+  }
 
   return (
-    <div>
+    <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Bank Details</h2>
-      
-      {error && <Alert type="error" onDismiss={() => setError(null)}>{error}</Alert>}
-      
+      {error && <div className="text-red-500">{error}</div>}
       <Card>
-        <form onSubmit={handleSubmit}>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-6">
-              <Input
-                label="Bank Name"
-                name="bank_name"
-                value={newBankDetail.bank_name}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                label="Account Number"
-                name="account_number"
-                value={newBankDetail.account_number}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                label="Account Name"
-                name="account_name"
-                value={newBankDetail.account_name}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardHeader>
-            <Button type="submit">{editingBankDetail ? 'Update Bank Detail' : 'Add Bank Detail'}</Button>
-            {editingBankDetail && (
-              <Button type="button" onClick={cancelEditing} className="ml-2">Cancel</Button>
-            )}
-          </CardHeader>
-        </form>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              label="Bank Name"
+              name="bank_name"
+              value={newBankDetail.bank_name}
+              onChange={handleInputChange}
+              required
+            />
+            <Input
+              label="Account Number"
+              name="account_number"
+              value={newBankDetail.account_number}
+              onChange={handleInputChange}
+              required
+            />
+            <Input
+              label="Account Name"
+              name="account_name"
+              value={newBankDetail.account_name}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+        </CardContent>
+        <CardHeader>
+          <Button onClick={handleSaveBankDetail}>{editingBankDetail ? 'Update Bank Detail' : 'Add Bank Detail'}</Button>
+          {editingBankDetail && (
+            <Button onClick={() => setEditingBankDetail(null)} className="ml-2">Cancel</Button>
+          )}
+        </CardHeader>
       </Card>
-
-      <div className="mt-8">
+      <div>
         <h3 className="text-lg font-medium text-gray-900">Existing Bank Details</h3>
         <ul className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
           {bankDetails.length > 0 ? (
@@ -112,6 +149,4 @@ const BankDetailsSection = ({ bankDetails, handleCreateBankDetail, handleEditBan
       </div>
     </div>
   );
-};
-
-export default BankDetailsSection;
+}

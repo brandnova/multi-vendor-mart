@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaHome, FaPlus, FaBox, FaDollarSign } from 'react-icons/fa';
+import { FaHome, FaPlus, FaBox, FaDollarSign, FaExchangeAlt } from 'react-icons/fa';
 
 const Sidebar = ({ activeItem, isCollapsed, toggleSidebar, setActiveSection }) => {
   const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
@@ -44,6 +44,12 @@ const Sidebar = ({ activeItem, isCollapsed, toggleSidebar, setActiveSection }) =
           label="Bank Details"
           active={activeItem === 'bank-details'}
           onClick={() => setActiveSection('bank-details')}
+        />
+        <SidebarItem
+          icon={FaExchangeAlt}
+          label="Orders"
+          active={activeItem === 'orders'}
+          onClick={() => setActiveSection('orders')}
         />
       </div>
     </div>

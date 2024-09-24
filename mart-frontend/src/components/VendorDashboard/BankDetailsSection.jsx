@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, Button, Input, Alert } from './UIComponents';
+import axios from 'axios';
+import { API_URL } from '../../config/api';
 
 const BankDetailsSection = ({ bankDetails, handleCreateBankDetail, handleEditBankDetail, handleDeleteBankDetail }) => {
   const [newBankDetail, setNewBankDetail] = useState({

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Button, Input, TextArea, Alert } from './UIComponents';
+import { Card, CardContent, CardHeader, Button, Input, TextArea } from './UIComponents';
+import axios from 'axios';
+import { API_URL } from '../../config/api';
 
 const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduct, handleDeleteProduct }) => {
   const [newProduct, setNewProduct] = useState({
@@ -9,8 +11,7 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
     quantity: '',
     image: null,
   });
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [error, setError] = useState(null);
+  const [editingProductId, setEditingProductId] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -22,39 +23,57 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' };
+    const formData = new FormData();
+    
+    for (const key in newProduct) {
+      formData.append(key, newProduct[key]);
+    }
+
     try {
-      if (editingProduct) {
-        await handleEditProduct(editingProduct.id, newProduct);
-        setEditingProduct(null);
+      if (editingProductId) {
+        const response = await axios.put(`${API_URL}/stores/products/${editingProductId}/`, formData, { headers });
+        setProducts(products.map(product => product.id === editingProductId ? response.data : product));
       } else {
-        await handleCreateProduct(newProduct);
+        const response = await axios.post(`${API_URL}/stores/products/`, formData, { headers });
+        setProducts([...products, response.data]);
       }
       setNewProduct({ name: '', description: '', price: '', quantity: '', image: null });
-    } catch (err) {
-      setError('Failed to save product. Please try again.');
+      setEditingProductId(null);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      await axios.delete(`${API_URL}/stores/products/${productId}/`, { headers });
+      setProducts(products.filter(product => product.id !== productId));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      // Handle error (e.g., show an error message to the user)
     }
   };
 
   const startEditing = (product) => {
-    setEditingProduct(product);
+    setEditingProductId(product.id);
     setNewProduct({
       name: product.name,
       description: product.description,
       price: product.price,
       quantity: product.quantity,
-      image: null, // Don't set the image here, as it's not editable in this form
+      image: null,
     });
-  };
-
-  const cancelEditing = () => {
-    setEditingProduct(null);
-    setNewProduct({ name: '', description: '', price: '', quantity: '', image: null });
   };
 
   return (
     <div>
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">Manage Products</h2>
-      {error && <Alert type="error" onDismiss={() => setError(null)}>{error}</Alert>}
       <Card>
         <form onSubmit={handleSubmit}>
           <CardContent>
@@ -99,9 +118,9 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
             </div>
           </CardContent>
           <CardHeader>
-            <Button type="submit">{editingProduct ? 'Update Product' : 'Create Product'}</Button>
-            {editingProduct && (
-              <Button type="button" onClick={cancelEditing} className="ml-2">Cancel</Button>
+            <Button type="submit">{editingProductId ? 'Update Product' : 'Create Product'}</Button>
+            {editingProductId && (
+              <Button type="button" onClick={() => setEditingProductId(null)} className="ml-2">Cancel</Button>
             )}
           </CardHeader>
         </form>

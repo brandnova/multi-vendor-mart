@@ -238,6 +238,7 @@ const VendorDashboard = () => {
           {storeData && activeSection === 'manage-products' && (
             <ManageProductsSection
               products={products}
+              setProducts={setProducts}
               handleCreateProduct={handleCreateProduct}
               handleEditProduct={handleEditProduct}
               handleDeleteProduct={handleDeleteProduct}

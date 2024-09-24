@@ -9,6 +9,7 @@ import DashboardSection from './DashboardSection';
 import CreateStoreSection from './CreateStoreSection';
 import ManageProductsSection from './ManageProductsSection';
 import BankDetailsSection from './BankDetailsSection';
+import ManageOrdersSection from './ManageOrdersSection';
 import { Button, Alert } from './UIComponents';
 
 const VendorDashboard = () => {
@@ -77,97 +78,6 @@ const VendorDashboard = () => {
     }
   };
 
-  const handleCreateProduct = async (newProduct) => {
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      for (const key in newProduct) {
-        formData.append(key, newProduct[key]);
-      }
-      const response = await axios.post(`${API_URL}/stores/products/`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-      });
-      setProducts([...products, response.data]);
-      setSuccessMessage('Product created successfully!');
-    } catch (err) {
-      setError('Failed to create product. Please try again later.');
-      console.error('Error creating product:', err);
-    }
-  };
-
-  const handleEditProduct = async (productId, updatedProduct) => {
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      for (const key in updatedProduct) {
-        formData.append(key, updatedProduct[key]);
-      }
-      const response = await axios.put(`${API_URL}/stores/products/${productId}/`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-      });
-      setProducts(products.map(product => product.id === productId ? response.data : product));
-      setSuccessMessage('Product updated successfully!');
-    } catch (err) {
-      setError('Failed to update product. Please try again later.');
-      console.error('Error updating product:', err);
-    }
-  };
-
-  const handleDeleteProduct = async (productId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/stores/products/${productId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProducts(products.filter(product => product.id !== productId));
-      setSuccessMessage('Product deleted successfully!');
-    } catch (err) {
-      setError('Failed to delete product. Please try again later.');
-      console.error('Error deleting product:', err);
-    }
-  };
-
-  const handleCreateBankDetail = async (newBankDetail) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_URL}/stores/bank-details/`, newBankDetail, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBankDetails([...bankDetails, response.data]);
-      setSuccessMessage('Bank details added successfully!');
-    } catch (err) {
-      setError('Failed to add bank details. Please try again later.');
-      console.error('Error creating bank detail:', err);
-    }
-  };
-
-  const handleEditBankDetail = async (bankDetailId, updatedBankDetail) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(`${API_URL}/stores/bank-details/${bankDetailId}/`, updatedBankDetail, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBankDetails(bankDetails.map(detail => detail.id === bankDetailId ? response.data : detail));
-      setSuccessMessage('Bank details updated successfully!');
-    } catch (err) {
-      setError('Failed to update bank details. Please try again later.');
-      console.error('Error updating bank detail:', err);
-    }
-  };
-
-  const handleDeleteBankDetail = async (bankDetailId) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/stores/bank-details/${bankDetailId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBankDetails(bankDetails.filter(detail => detail.id !== bankDetailId));
-      setSuccessMessage('Bank details deleted successfully!');
-    } catch (err) {
-      setError('Failed to delete bank details. Please try again later.');
-      console.error('Error deleting bank detail:', err);
-    }
-  };
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -194,6 +104,7 @@ const VendorDashboard = () => {
                 {activeSection === 'create-store' && (storeData ? 'Your Store' : 'Create Store')}
                 {activeSection === 'manage-products' && 'Manage Products'}
                 {activeSection === 'bank-details' && 'Bank Details'}
+                {activeSection === 'orders' && 'Orders'}
               </h1>
               <Button onClick={toggleSidebar} className="bg-gray-700 text-gray-300 hover:bg-gray-700">
                 <FaBars />
@@ -236,21 +147,13 @@ const VendorDashboard = () => {
             )
           )}
           {storeData && activeSection === 'manage-products' && (
-            <ManageProductsSection
-              products={products}
-              setProducts={setProducts}
-              handleCreateProduct={handleCreateProduct}
-              handleEditProduct={handleEditProduct}
-              handleDeleteProduct={handleDeleteProduct}
-            />
+            <ManageProductsSection />
           )}
           {storeData && activeSection === 'bank-details' && (
-            <BankDetailsSection
-              bankDetails={bankDetails}
-              handleCreateBankDetail={handleCreateBankDetail}
-              handleEditBankDetail={handleEditBankDetail}
-              handleDeleteBankDetail={handleDeleteBankDetail}
-            />
+            <BankDetailsSection />
+          )}
+          {storeData && activeSection === 'orders' && (
+            <ManageOrdersSection />
           )}
         </main>
       </div>

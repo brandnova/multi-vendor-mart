@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, Button, Input, TextArea } from './UIComponents';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../config/api';
+import { Card, CardContent, CardHeader, Button, Input, TextArea } from './UIComponents';
 
-const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduct, handleDeleteProduct }) => {
+export default function ManageProductsSection() {
+  const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -12,17 +13,47 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
     image: null,
   });
   const [editingProductId, setEditingProductId] = useState(null);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/stores/products/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setError('Failed to fetch products. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    setNewProduct((prevState) => ({
-      ...prevState,
-      [name]: type === 'file' ? files[0] : value,
-    }));
+    if (type === 'file') {
+      setNewProduct((prevState) => ({
+        ...prevState,
+        [name]: files[0],
+      }));
+      setImagePreview(URL.createObjectURL(files[0]));
+    } else {
+      setNewProduct((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSaveProduct = async () => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' };
     const formData = new FormData();
@@ -32,18 +63,21 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
     }
 
     try {
+      let response;
       if (editingProductId) {
-        const response = await axios.put(`${API_URL}/stores/products/${editingProductId}/`, formData, { headers });
+        response = await axios.put(`${API_URL}/stores/products/${editingProductId}/`, formData, { headers });
         setProducts(products.map(product => product.id === editingProductId ? response.data : product));
       } else {
-        const response = await axios.post(`${API_URL}/stores/products/`, formData, { headers });
+        response = await axios.post(`${API_URL}/stores/products/`, formData, { headers });
         setProducts([...products, response.data]);
       }
       setNewProduct({ name: '', description: '', price: '', quantity: '', image: null });
       setEditingProductId(null);
+      setImagePreview(null);
+      setError(null);
     } catch (error) {
       console.error('Error saving product:', error);
-      // Handle error (e.g., show an error message to the user)
+      setError('Failed to save product. Please try again.');
     }
   };
 
@@ -54,9 +88,10 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
     try {
       await axios.delete(`${API_URL}/stores/products/${productId}/`, { headers });
       setProducts(products.filter(product => product.id !== productId));
+      setError(null);
     } catch (error) {
       console.error('Error deleting product:', error);
-      // Handle error (e.g., show an error message to the user)
+      setError('Failed to delete product. Please try again.');
     }
   };
 
@@ -71,61 +106,69 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
     });
   };
 
+  if (isLoading) {
+    return <div>Loading products...</div>;
+  }
+
   return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Manage Products</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-gray-900">Manage Products</h2>
+      {error && <div className="text-red-500">{error}</div>}
       <Card>
-        <form onSubmit={handleSubmit}>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Product Name"
-                name="name"
-                value={newProduct.name}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                label="Price"
-                name="price"
-                type="number"
-                value={newProduct.price}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                label="Quantity"
-                name="quantity"
-                type="number"
-                value={newProduct.quantity}
-                onChange={handleInputChange}
-                required
-              />
-              <Input
-                label="Image"
-                name="image"
-                type="file"
-                onChange={handleInputChange}
-              />
-              <TextArea
-                label="Description"
-                name="description"
-                value={newProduct.description}
-                onChange={handleInputChange}
-                required
-                className="md:col-span-2"
-              />
-            </div>
-          </CardContent>
-          <CardHeader>
-            <Button type="submit">{editingProductId ? 'Update Product' : 'Create Product'}</Button>
-            {editingProductId && (
-              <Button type="button" onClick={() => setEditingProductId(null)} className="ml-2">Cancel</Button>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              label="Product Name"
+              name="name"
+              value={newProduct.name}
+              onChange={handleInputChange}
+              required
+            />
+            <Input
+              label="Price"
+              name="price"
+              type="number"
+              value={newProduct.price}
+              onChange={handleInputChange}
+              required
+            />
+            <Input
+              label="Quantity"
+              name="quantity"
+              type="number"
+              value={newProduct.quantity}
+              onChange={handleInputChange}
+              required
+            />
+            <Input
+              label="Image"
+              name="image"
+              type="file"
+              onChange={handleInputChange}
+              accept="image/*"
+            />
+            {imagePreview && (
+              <img src={imagePreview} alt="Product preview" className="mt-2 max-w-xs rounded-lg shadow-md" />
             )}
-          </CardHeader>
-        </form>
+            <TextArea
+              label="Description"
+              name="description"
+              value={newProduct.description}
+              onChange={handleInputChange}
+              required
+              className="md:col-span-2"
+            />
+            
+          </div>
+        </CardContent>
+        <CardHeader>
+        <Button onClick={handleSaveProduct}>{editingProductId ? 'Update Product' : 'Create Product'}</Button>
+          {editingProductId && (
+            <Button onClick={() => setEditingProductId(null)} className="ml-2">Cancel</Button>
+          )}
+        </CardHeader>
       </Card>
-      <div className="mt-8">
+      <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">Existing Products</h3>
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
@@ -156,6 +199,4 @@ const ManageProductsSection = ({ products, handleCreateProduct, handleEditProduc
       </div>
     </div>
   );
-};
-
-export default ManageProductsSection;
+}

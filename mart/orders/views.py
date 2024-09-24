@@ -1,5 +1,6 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from .models import Order
 from .serializers import OrderSerializer
 from stores.models import Store
@@ -34,3 +35,13 @@ class OrderDetailView(generics.RetrieveAPIView):
         if obj.store.owner != self.request.user:
             raise PermissionDenied("You do not have permission to view this order.")
         return obj
+    
+class OrderDeleteView(generics.DestroyAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
+    queryset = Order.objects.all()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Order deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

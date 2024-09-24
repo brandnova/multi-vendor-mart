@@ -30,6 +30,14 @@ class BankDetailsCreateView(generics.CreateAPIView):
         store = get_object_or_404(Store, owner=self.request.user)
         serializer.save(store=store)
 
+class BankDetailsDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = BankDetailsSerializer
+    permission_classes = [IsVerifiedVendor]
+
+    def get_queryset(self):
+        store = get_object_or_404(Store, owner=self.request.user)
+        return BankDetails.objects.filter(store=store)
+
 class BankDetailsListView(generics.ListAPIView):
     serializer_class = BankDetailsSerializer
     permission_classes = [IsVerifiedVendor]

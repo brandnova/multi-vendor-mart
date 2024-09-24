@@ -1,15 +1,22 @@
+// Input.js
 import React from 'react';
 
-const Input = React.forwardRef(({ className, ...props }, ref) => {
+const Input = ({ label, name, value, onChange }) => {
   return (
-    <input
-      className={`px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md sm:text-sm focus:ring-1 ${className}`}
-      ref={ref}
-      {...props}
-    />
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <input
+        type="text"
+        id={name}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+      />
+    </div>
   );
-});
-
-Input.displayName = 'Input';
+};
 
 export { Input };

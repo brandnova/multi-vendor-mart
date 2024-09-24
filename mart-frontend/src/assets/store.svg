@@ -1,0 +1,23 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5C6BC0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main circle -->
+  <circle cx="100" cy="100" r="90" fill="url(#grad1)" />
+  
+  <!-- Vendor store icons -->
+  <rect x="70" y="60" width="25" height="25" fill="white" rx="5" />
+  <rect x="105" y="60" width="25" height="25" fill="white" rx="5" />
+  <rect x="70" y="95" width="25" height="25" fill="white" rx="5" />
+  <rect x="105" y="95" width="25" height="25" fill="white" rx="5" />
+  
+  <!-- Shopping cart handle -->
+  <path d="M60 130 Q100 90 140 130" stroke="white" stroke-width="8" fill="none" />
+  
+  <!-- Shopping cart base -->
+  <path d="M60 130 L140 130 L130 150 L70 150 Z" fill="white" />
+</svg>

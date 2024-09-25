@@ -13,9 +13,13 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class StoreSerializer(serializers.ModelSerializer):
     bank_details = BankDetailsSerializer(many=True, read_only=True)
-    products = ProductSerializer(many=True, read_only=True)
-
     class Meta:
         model = Store
-        fields = ['id', 'name', 'slug', 'location', 'contact_email', 'contact_phone', 'is_active', 'bank_details', 'products', 'banner_image']
+        fields = ['id', 'name', 'slug', 'location', 'contact_email', 'contact_phone', 'is_active', 'banner_image', 'tag_line', 'primary_color', 'secondary_color', 'accent_color', 'bank_details']
         read_only_fields = ['slug', 'is_active']
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        if 'name' in validated_data:
+            instance.save(update_fields=['slug'])
+        return instance

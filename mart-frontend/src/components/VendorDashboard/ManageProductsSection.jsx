@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, Button, Input, TextArea } from './UIComp
 
 export default function ManageProductsSection() {
   const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
@@ -40,40 +40,34 @@ export default function ManageProductsSection() {
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
-      setNewProduct((prevState) => ({
-        ...prevState,
-        [name]: files[0],
-      }));
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
       setImagePreview(URL.createObjectURL(files[0]));
     } else {
-      setNewProduct((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSaveProduct = async () => {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' };
-    const formData = new FormData();
+    const formDataToSend = new FormData();
     
-    for (const key in newProduct) {
-      formData.append(key, newProduct[key]);
-    }
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== null) {
+        formDataToSend.append(key, formData[key]);
+      }
+    });
 
     try {
       let response;
       if (editingProductId) {
-        response = await axios.put(`${API_URL}/stores/products/${editingProductId}/`, formData, { headers });
+        response = await axios.patch(`${API_URL}/stores/products/${editingProductId}/`, formDataToSend, { headers });
         setProducts(products.map(product => product.id === editingProductId ? response.data : product));
       } else {
-        response = await axios.post(`${API_URL}/stores/products/`, formData, { headers });
+        response = await axios.post(`${API_URL}/stores/products/`, formDataToSend, { headers });
         setProducts([...products, response.data]);
       }
-      setNewProduct({ name: '', description: '', price: '', quantity: '', image: null });
-      setEditingProductId(null);
-      setImagePreview(null);
+      resetForm();
       setError(null);
     } catch (error) {
       console.error('Error saving product:', error);
@@ -97,13 +91,20 @@ export default function ManageProductsSection() {
 
   const startEditing = (product) => {
     setEditingProductId(product.id);
-    setNewProduct({
+    setFormData({
       name: product.name,
       description: product.description,
       price: product.price,
       quantity: product.quantity,
       image: null,
     });
+    setImagePreview(product.image);
+  };
+
+  const resetForm = () => {
+    setFormData({ name: '', description: '', price: '', quantity: '', image: null });
+    setEditingProductId(null);
+    setImagePreview(null);
   };
 
   if (isLoading) {
@@ -120,7 +121,7 @@ export default function ManageProductsSection() {
             <Input
               label="Product Name"
               name="name"
-              value={newProduct.name}
+              value={formData.name}
               onChange={handleInputChange}
               required
             />
@@ -128,7 +129,7 @@ export default function ManageProductsSection() {
               label="Price"
               name="price"
               type="number"
-              value={newProduct.price}
+              value={formData.price}
               onChange={handleInputChange}
               required
             />
@@ -136,7 +137,7 @@ export default function ManageProductsSection() {
               label="Quantity"
               name="quantity"
               type="number"
-              value={newProduct.quantity}
+              value={formData.quantity}
               onChange={handleInputChange}
               required
             />
@@ -153,18 +154,17 @@ export default function ManageProductsSection() {
             <TextArea
               label="Description"
               name="description"
-              value={newProduct.description}
+              value={formData.description}
               onChange={handleInputChange}
               required
               className="md:col-span-2"
             />
-            
           </div>
         </CardContent>
         <CardHeader>
-        <Button onClick={handleSaveProduct}>{editingProductId ? 'Update Product' : 'Create Product'}</Button>
+          <Button onClick={handleSaveProduct}>{editingProductId ? 'Update Product' : 'Create Product'}</Button>
           {editingProductId && (
-            <Button onClick={() => setEditingProductId(null)} className="ml-2">Cancel</Button>
+            <Button onClick={resetForm} className="ml-2">Cancel</Button>
           )}
         </CardHeader>
       </Card>

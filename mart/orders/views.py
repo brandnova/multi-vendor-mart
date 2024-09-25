@@ -1,9 +1,12 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+
+from stores.serializers import ProductSerializer
 from .models import Order
 from .serializers import OrderSerializer
-from stores.models import Store
+from stores.models import Product, Store
 
 class IsStoreOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -14,8 +17,26 @@ class OrderCreateView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
-        store = Store.objects.get(slug=self.kwargs['store_slug'])
+        store = get_object_or_404(Store, slug=self.kwargs['store_slug'])
         serializer.save(store=store)
+
+class UpdateProductQuantityView(generics.UpdateAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
+
+    def get_queryset(self):
+        return Product.objects.filter(store__owner=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        new_quantity = serializer.validated_data.get('quantity')
+        if new_quantity < 0:
+            return Response({"detail": "Quantity cannot be negative."}, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 class OrderListView(generics.ListAPIView):
     serializer_class = OrderSerializer

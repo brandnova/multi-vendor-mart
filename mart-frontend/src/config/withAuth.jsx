@@ -24,6 +24,7 @@ const withAuth = (WrappedComponent) => {
           const response = await api.get('/accounts/profile/');
           setIsAuthenticated(true);
           setUserData(response.data);
+          navigate('/dashboard');
         } catch (error) {
           console.error('Authentication check failed:', error);
           localStorage.removeItem('access_token');

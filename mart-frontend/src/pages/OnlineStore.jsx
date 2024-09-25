@@ -99,21 +99,30 @@ const OnlineStore = ({ storeData }) => {
     alert('Order placed successfully!');
   };
 
+  const styles = {
+    primary: { backgroundColor: storeData.primary_color, color: '#ffffff' },
+    secondary: { backgroundColor: storeData.secondary_color, color: storeData.primary_color },
+    accent: { color: storeData.accent_color },
+    border: { borderColor: storeData.accent_color },
+    text: { color: storeData.primary_color },
+    background: { backgroundColor: '#f8f9fa' }, // Light gray background
+  };
+
   return (
-    <div className="font-sans">
+    <div className="font-sans" style={styles.background}>
       {/* Navbar */}
-      <nav className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sticky top-0 z-10">
+      <nav className="p-4 sticky top-0 z-10" style={styles.primary}>
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">{storeData.name}</h1>
           <div className="flex items-center space-x-6">
             <button
-              className="text-white hover:text-gray-200 transition duration-300"
+              className="hover:opacity-75 transition duration-300"
               onClick={() => setIsBankDetailsOpen(true)}
             >
               <FaInfoCircle className="text-xl" />
             </button>
             <button
-              className="text-white hover:text-gray-200 transition duration-300"
+              className="hover:opacity-75 transition duration-300"
               onClick={() => setIsContactInfoOpen(true)}
             >
               <FaAddressCard className="text-xl" />
@@ -122,9 +131,9 @@ const OnlineStore = ({ storeData }) => {
               className="relative"
               onClick={() => setIsCartOpen(!isCartOpen)}
             >
-              <FaShoppingCart className="text-2xl hover:text-gray-200 transition duration-300" />
+              <FaShoppingCart className="text-2xl hover:opacity-75 transition duration-300" />
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                <span className="absolute -top-2 -right-2 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs" style={styles.secondary}>
                   {cartItems.length}
                 </span>
               )}
@@ -152,34 +161,34 @@ const OnlineStore = ({ storeData }) => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-16">
-        <FeaturedProducts products={storeData.products} />
-      </section>
+      <FeaturedProducts products={storeData.products} styles={styles} />
 
       {/* Product List */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-10 text-center text-gray-800">Our Products</h2>
+          <h2 className="text-3xl font-bold mb-10 text-center" style={styles.text}>Our Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {storeData.products.map((product) => (
               <div
                 key={product.id}
                 className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
+                style={styles.border}
               >
                 <img
-                  src={product.image}
+                  src={`${API_URL}${product.image}`}
                   alt={product.name}
                   className="w-full h-64 object-cover"
                 />
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2 text-gray-800">{product.name}</h3>
+                  <h3 className="text-xl font-semibold mb-2" style={styles.text}>{product.name}</h3>
                   <p className="text-gray-600 text-sm mb-4">{product.description}</p>
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-2xl font-bold text-blue-600">${product.price}</span>
+                    <span className="text-2xl font-bold" style={styles.accent}>${product.price}</span>
                     <span className="text-gray-500 text-sm">In stock: {product.quantity}</span>
                   </div>
                   <button
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-full hover:from-blue-600 hover:to-purple-600 transition duration-300 text-sm font-semibold"
+                    className="w-full text-white py-2 rounded-full transition duration-300 text-sm font-semibold"
+                    style={styles.primary}
                     onClick={() => addToCart(product)}
                   >
                     Add to Cart
@@ -197,7 +206,7 @@ const OnlineStore = ({ storeData }) => {
           <div className="absolute right-0 top-0 h-full w-full sm:w-96 bg-white shadow-lg overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Your Cart</h2>
+                <h2 className="text-xl font-bold" style={styles.primaryText}>Your Cart</h2>
                 <button
                   className="text-gray-500 hover:text-gray-700"
                   onClick={() => setIsCartOpen(false)}
@@ -212,12 +221,12 @@ const OnlineStore = ({ storeData }) => {
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex items-center mb-4">
                       <img
-                        src={item.image}
+                        src={`${API_URL}${item.image}`}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded mr-4"
                       />
                       <div className="flex-grow">
-                        <h3 className="font-semibold">{item.name}</h3>
+                        <h3 className="font-semibold" style={styles.primaryText}>{item.name}</h3>
                         <p className="text-gray-600">${item.price}</p>
                         <div className="flex items-center mt-2">
                           <button
@@ -244,7 +253,7 @@ const OnlineStore = ({ storeData }) => {
                     </div>
                   ))}
                   <div className="border-t pt-4 mt-4">
-                    <p className="text-xl font-bold mb-4">
+                    <p className="text-xl font-bold mb-4" style={styles.primaryText}>
                       Total: ${calculateTotal()}
                     </p>
                     <div className="mb-4">
@@ -282,7 +291,8 @@ const OnlineStore = ({ storeData }) => {
                       />
                     </div>
                     <button
-                      className="w-full bg-green-600 text-white py-2 rounded-full hover:bg-green-700 transition duration-300 text-sm"
+                      className="w-full text-white py-2 rounded-full transition duration-300 text-sm"
+                      style={styles.accentBg}
                       onClick={handleCheckout}
                     >
                       Checkout
@@ -298,9 +308,9 @@ const OnlineStore = ({ storeData }) => {
       {/* Bank Details Modal */}
       {isBankDetailsOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.secondary}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Bank Details</h2>
+              <h2 className="text-xl font-bold" style={styles.text}>Bank Details</h2>
               <button
                 className="text-gray-500 hover:text-gray-700"
                 onClick={() => setIsBankDetailsOpen(false)}
@@ -308,9 +318,9 @@ const OnlineStore = ({ storeData }) => {
                 <FaTimes />
               </button>
             </div>
-            {storeData.bank_details.length > 0 ? (
+            {storeData.bank_details && storeData.bank_details.length > 0 ? (
               storeData.bank_details.map((bank, index) => (
-                <div key={index} className="mb-4">
+                <div key={index} className="mb-4 p-4 rounded-lg" style={{...styles.border, borderWidth: '1px', borderStyle: 'solid'}}>
                   <p><strong>Bank:</strong> {bank.bank_name}</p>
                   <p><strong>Account Number:</strong> {bank.account_number}</p>
                   <p><strong>Account Name:</strong> {bank.account_name}</p>
@@ -326,9 +336,9 @@ const OnlineStore = ({ storeData }) => {
       {/* Contact Info Modal */}
       {isContactInfoOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.secondaryBg}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Contact Information</h2>
+              <h2 className="text-xl font-bold" style={styles.primaryText}>Contact Information</h2>
               <button
                 className="text-gray-500 hover:text-gray-700"
                 onClick={() => setIsContactInfoOpen(false)}
@@ -345,8 +355,8 @@ const OnlineStore = ({ storeData }) => {
       {/* Save Info Modal */}
       {showSaveInfoModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Save Your Information?</h2>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.secondaryBg}>
+            <h2 className="text-xl font-bold mb-4" style={styles.primaryText}>Save Your Information?</h2>
             <p className="mb-4">Would you like to save your checkout information for future orders?</p>
             <div className="flex justify-end space-x-4">
               <button
@@ -356,7 +366,8 @@ const OnlineStore = ({ storeData }) => {
                 No
               </button>
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 text-white rounded"
+                style={styles.accentBg}
                 onClick={() => handleSaveInfo(true)}
               >
                 Yes

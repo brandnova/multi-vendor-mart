@@ -71,3 +71,12 @@ class PublicStoreView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
     queryset = Store.objects.filter(is_active=True)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        products = Product.objects.filter(store=instance)
+        product_serializer = ProductSerializer(products, many=True)
+        data = serializer.data
+        data['products'] = product_serializer.data
+        return Response(data)

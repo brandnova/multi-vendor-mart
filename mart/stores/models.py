@@ -1,11 +1,12 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.core.validators import RegexValidator
 
 class Store(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, max_length=120)
     location = models.CharField(max_length=255)
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=20)
@@ -15,9 +16,34 @@ class Store(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    primary_color = models.CharField(
+        max_length=7,
+        default="#000000",
+        validators=[RegexValidator(regex=r'^#([A-Fa-f0-9]{6})$', message='Enter a valid 6-digit hex color code')]
+    )
+    secondary_color = models.CharField(
+        max_length=7,
+        default="#FFFFFF",
+        validators=[RegexValidator(regex=r'^#([A-Fa-f0-9]{6})$', message='Enter a valid 6-digit hex color code')]
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        default="#808080",
+        validators=[RegexValidator(regex=r'^#([A-Fa-f0-9]{6})$', message='Enter a valid 6-digit hex color code')]
+    )
+    
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+        if self._state.adding or 'name' in kwargs.get('update_fields', []):
+            base_slug = slugify(self.name)
+            unique_slug = base_slug
+            num = 1
+            while Store.objects.filter(slug=unique_slug).exists():
+                unique_slug = f"{base_slug}-{num}"
+                num += 1
+            self.slug = unique_slug
         super().save(*args, **kwargs)
 
     def __str__(self):

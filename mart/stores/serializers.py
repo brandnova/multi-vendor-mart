@@ -17,5 +17,5 @@ class StoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Store
-        fields = ['id', 'name', 'slug', 'location', 'contact_email', 'contact_phone', 'is_active', 'bank_details', 'products']
+        fields = ['id', 'name', 'slug', 'location', 'contact_email', 'contact_phone', 'is_active', 'bank_details', 'products', 'banner_image']
         read_only_fields = ['slug', 'is_active']

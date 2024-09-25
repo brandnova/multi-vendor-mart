@@ -1,7 +1,5 @@
-Save order placement form data to local storage and autofill it when placing order.
-Handle image display for store products and store banners.
 Make store details editable by vendors (e.g. slug included.)
 Email verification page for visual feedback. 
 Token lifetime, refresh and replacement, delete if expired. (Make sure token is always deleted from storage to avoid conflicts)
 Redirect to dashboard if authenticated, and redirect to auth (from dashboard) if not. (With Auth)!!!!!!!!!!!!!!!!!!!!!!!!
-
+Render stylist list of dtores on the homepage.

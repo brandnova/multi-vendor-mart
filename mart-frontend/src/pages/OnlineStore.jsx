@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { FaShoppingCart, FaInfoCircle, FaTimes } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaShoppingCart, FaInfoCircle, FaTimes, FaAddressCard } from "react-icons/fa";
+import FeaturedProducts from './FeaturedProducts';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 
@@ -7,12 +8,21 @@ const OnlineStore = ({ storeData }) => {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isBankDetailsOpen, setIsBankDetailsOpen] = useState(false);
+  const [isContactInfoOpen, setIsContactInfoOpen] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     address: "",
     email: "",
     phone: ""
   });
+  const [showSaveInfoModal, setShowSaveInfoModal] = useState(false);
+
+  useEffect(() => {
+    const savedInfo = localStorage.getItem('customerInfo');
+    if (savedInfo) {
+      setCustomerInfo(JSON.parse(savedInfo));
+    }
+  }, []);
 
   const addToCart = (product) => {
     const existingItem = cartItems.find((item) => item.id === product.id);
@@ -70,7 +80,7 @@ const OnlineStore = ({ storeData }) => {
       console.log('Order created:', response.data);
       setCartItems([]);
       setIsCartOpen(false);
-      alert('Order placed successfully!');
+      setShowSaveInfoModal(true);
     } catch (error) {
       console.error('Error creating order:', error);
       alert('Failed to place order. Please try again.');
@@ -81,26 +91,40 @@ const OnlineStore = ({ storeData }) => {
     setCustomerInfo({ ...customerInfo, [e.target.name]: e.target.value });
   };
 
+  const handleSaveInfo = (save) => {
+    if (save) {
+      localStorage.setItem('customerInfo', JSON.stringify(customerInfo));
+    }
+    setShowSaveInfoModal(false);
+    alert('Order placed successfully!');
+  };
+
   return (
     <div className="font-sans">
       {/* Navbar */}
-      <nav className="bg-blue-600 text-white p-3 sticky top-0 z-10">
+      <nav className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sticky top-0 z-10">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold">{storeData.name}</h1>
-          <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold">{storeData.name}</h1>
+          <div className="flex items-center space-x-6">
             <button
-              className="text-white hover:text-gray-200"
+              className="text-white hover:text-gray-200 transition duration-300"
               onClick={() => setIsBankDetailsOpen(true)}
             >
               <FaInfoCircle className="text-xl" />
             </button>
             <button
+              className="text-white hover:text-gray-200 transition duration-300"
+              onClick={() => setIsContactInfoOpen(true)}
+            >
+              <FaAddressCard className="text-xl" />
+            </button>
+            <button
               className="relative"
               onClick={() => setIsCartOpen(!isCartOpen)}
             >
-              <FaShoppingCart className="text-xl" />
+              <FaShoppingCart className="text-2xl hover:text-gray-200 transition duration-300" />
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cartItems.length}
                 </span>
               )}
@@ -110,48 +134,52 @@ const OnlineStore = ({ storeData }) => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-64 md:h-96 bg-gray-100">
+      <section className="relative h-96 bg-gray-900 text-white">
         <img
-          src={`${API_URL}/${storeData.banner_image}` || "https://via.placeholder.com/1200x400"}
+          src={storeData.banner_image}
           alt={`${storeData.name} banner`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-50"
         />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">{storeData.name}</h2>
-            <p className="text-lg md:text-xl mb-2">{storeData.location}</p>
-            <div className="flex justify-center space-x-4 text-sm md:text-base">
-              <p><strong>Email:</strong> {storeData.contact_email}</p>
-              <p><strong>Phone:</strong> {storeData.contact_phone}</p>
-            </div>
-          </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <h2 className="text-5xl font-bold mb-1 text-center">{storeData.name}</h2>
+          <p className="text-sm mb-6 text-center">{storeData.location}</p>
+          {storeData.tag_line && (
+            <p className="text-xl italic text-center bg-black bg-opacity-50 px-6 py-2 rounded-full">
+              "{storeData.tag_line}"
+            </p>
+          )}
         </div>
       </section>
 
+      {/* Featured Products Section */}
+      <section className="py-16">
+        <FeaturedProducts products={storeData.products} />
+      </section>
+
       {/* Product List */}
-      <section className="py-12">
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6 text-center">Our Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-3xl font-bold mb-10 text-center text-gray-800">Our Products</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {storeData.products.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden"
+                className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
               >
                 <img
-                  src={product.image || "https://via.placeholder.com/300"}
+                  src={product.image}
                   alt={product.name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-64 object-cover"
                 />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
-                  <p className="text-gray-600 text-sm mb-3">{product.description}</p>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-xl font-bold">${product.price}</span>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-2 text-gray-800">{product.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4">{product.description}</p>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-2xl font-bold text-blue-600">${product.price}</span>
                     <span className="text-gray-500 text-sm">In stock: {product.quantity}</span>
                   </div>
                   <button
-                    className="w-full bg-blue-600 text-white py-2 rounded-full hover:bg-blue-700 transition duration-300 text-sm"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 rounded-full hover:from-blue-600 hover:to-purple-600 transition duration-300 text-sm font-semibold"
                     onClick={() => addToCart(product)}
                   >
                     Add to Cart
@@ -184,7 +212,7 @@ const OnlineStore = ({ storeData }) => {
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex items-center mb-4">
                       <img
-                        src={item.image || "https://via.placeholder.com/50"}
+                        src={item.image}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded mr-4"
                       />
@@ -291,6 +319,49 @@ const OnlineStore = ({ storeData }) => {
             ) : (
               <p>No bank details available.</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Contact Info Modal */}
+      {isContactInfoOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Contact Information</h2>
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setIsContactInfoOpen(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <p><strong>Email:</strong> {storeData.contact_email}</p>
+            <p><strong>Phone:</strong> {storeData.contact_phone}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Save Info Modal */}
+      {showSaveInfoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Save Your Information?</h2>
+            <p className="mb-4">Would you like to save your checkout information for future orders?</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                onClick={() => handleSaveInfo(false)}
+              >
+                No
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={() => handleSaveInfo(true)}
+              >
+                Yes
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -9,16 +9,26 @@ from .models import EmailVerificationToken
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username', 'email', 'password', 'is_vendor')
+        read_only_fields = ('id', 'is_vendor')
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         self.send_verification_email(user)
         return user
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr == 'password':
+                instance.set_password(value)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
 
     def send_verification_email(self, user):
         token = EmailVerificationToken.objects.create(user=user)

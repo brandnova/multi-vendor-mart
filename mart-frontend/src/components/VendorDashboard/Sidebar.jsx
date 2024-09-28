@@ -1,16 +1,21 @@
 import React from 'react';
 import { logout } from '../../config/api';
-import { FaHome, FaPlus, FaBox, FaDollarSign, FaExchangeAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaHome, FaPlus, FaBox, FaDollarSign, FaExchangeAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { useVendor } from '../../context/VendorContext';
 
 const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
-  const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
+  const { storeData } = useVendor();
+
+  const SidebarItem = ({ icon: Icon, label, active, onClick, disabled }) => (
     <div
       className={`px-4 py-3 rounded-md cursor-pointer ${
         active
           ? 'bg-gray-700 text-white'
+          : disabled
+          ? 'text-gray-500 cursor-not-allowed'
           : 'text-gray-400 hover:bg-gray-700 hover:text-white'
       }`}
-      onClick={onClick}
+      onClick={disabled ? null : onClick}
     >
       <div className="flex items-center">
         <Icon />
@@ -33,33 +38,42 @@ const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
           onClick={() => setActiveSection('dashboard')}
         />
         <SidebarItem
-          icon={FaPlus}
-          label="Create Store"
+          icon={FaBox}
+          label={storeData ? "Update Store" : "Create Store"}
           active={activeItem === 'create-store'}
           onClick={() => setActiveSection('create-store')}
         />
         <SidebarItem
-          icon={FaBox}
+          icon={FaPlus}
           label="Manage Products"
           active={activeItem === 'manage-products'}
           onClick={() => setActiveSection('manage-products')}
+          disabled={!storeData}
         />
         <SidebarItem
           icon={FaDollarSign}
           label="Bank Details"
           active={activeItem === 'bank-details'}
           onClick={() => setActiveSection('bank-details')}
+          disabled={!storeData}
         />
         <SidebarItem
           icon={FaExchangeAlt}
           label="Orders"
           active={activeItem === 'orders'}
           onClick={() => setActiveSection('orders')}
+          disabled={!storeData}
         />
-
+        <SidebarItem
+          icon={FaUser}
+          label="Profile"
+          active={activeItem === 'profile'}
+          onClick={() => setActiveSection('profile')}
+        />
+        
         <div className="mt-auto px-4 py-3">
           <div
-            className="flex items-center cursor-pointer text-gray-400 hover:bg-gray-700 hover:text-white rounded-md px-4 py-2"
+            className="flex items-center cursor-pointer text-gray-400 hover:bg-gray-700 hover:text-white rounded-md ps-2 py-2"
             onClick={logout}
           >
             <FaSignOutAlt />

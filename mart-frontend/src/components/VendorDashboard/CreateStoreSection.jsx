@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, Button, Input } from './UIComponents';
-import { AlertCircle } from 'lucide-react';
-import axios from 'axios';
-import { API_URL } from '../../config/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { useVendor } from '../../context/VendorContext';
+import { Card, CardContent, CardHeader, Button, Input, Alert } from './UIComponents';
+import { AlertCircle, HelpCircle, Upload } from 'lucide-react';
+import { ChromePicker } from 'react-color';
+import { Link } from 'react-router-dom';
+import * as api from '../../config/api';
 
-const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
+const CreateStoreSection = () => {
+  const { storeData, setStoreData } = useVendor();
   const [store, setStore] = useState({
     name: '',
     location: '',
@@ -14,8 +17,26 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
     primary_color: '#000000',
     secondary_color: '#FFFFFF',
     accent_color: '#808080',
+    banner_image: null,
   });
+  const [bannerPreview, setBannerPreview] = useState(null);
   const [errors, setErrors] = useState({});
+  const [showColorPicker, setShowColorPicker] = useState({
+    primary_color: false,
+    secondary_color: false,
+    accent_color: false,
+  });
+  const [showHelpText, setShowHelpText] = useState({
+    primary_color: false,
+    secondary_color: false,
+    accent_color: false,
+  });
+  const colorPickerRefs = {
+    primary_color: useRef(),
+    secondary_color: useRef(),
+    accent_color: useRef(),
+  };
+  const helpTextTimers = useRef({});
 
   useEffect(() => {
     if (storeData) {
@@ -28,16 +49,54 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
         primary_color: storeData.primary_color || '#000000',
         secondary_color: storeData.secondary_color || '#FFFFFF',
         accent_color: storeData.accent_color || '#808080',
+        banner_image: null,
       });
+      setBannerPreview(storeData.banner_image || null);
     }
+
+    const handleClickOutside = (event) => {
+      Object.entries(colorPickerRefs).forEach(([key, ref]) => {
+        if (ref.current && !ref.current.contains(event.target)) {
+          setShowColorPicker(prev => ({ ...prev, [key]: false }));
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [storeData]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setStore((prevState) => ({ ...prevState, [name]: value }));
-    
-    // Clear error for the field being edited
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setStore((prevState) => ({ ...prevState, [name]: files[0] }));
+      setBannerPreview(URL.createObjectURL(files[0]));
+    } else {
+      setStore((prevState) => ({ ...prevState, [name]: value }));
+    }
     setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  };
+
+  const handleColorChange = (color, name) => {
+    setStore((prevState) => ({ ...prevState, [name]: color.hex }));
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  };
+
+  const toggleColorPicker = (name) => {
+    setShowColorPicker((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const showHelpTextWithDelay = (name) => {
+    helpTextTimers.current[name] = setTimeout(() => {
+      setShowHelpText((prev) => ({ ...prev, [name]: true }));
+    }, 1000);
+  };
+
+  const hideHelpText = (name) => {
+    clearTimeout(helpTextTimers.current[name]);
+    setShowHelpText((prev) => ({ ...prev, [name]: false }));
   };
 
   const validateForm = () => {
@@ -60,40 +119,53 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-
+  
     try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
+      const formData = new FormData();
+      Object.keys(store).forEach(key => {
+        if (store[key] !== null) {
+          formData.append(key, store[key]);
+        }
+      });
+  
       let response;
-
       if (storeData) {
-        // Update existing store
-        response = await axios.put(`${API_URL}/stores/store/detail/`, store, { headers });
+        response = await api.updateStore(formData);
       } else {
-        // Create new store
-        response = await axios.post(`${API_URL}/stores/store/`, store, { headers });
+        response = await api.createStore(formData);
       }
-
-      setStoreData(response.data);
-      setActiveSection('dashboard');
+  
+      setStoreData(response);
     } catch (error) {
       console.error('Error saving store:', error);
       setErrors({ submit: error.response?.data?.detail || 'Failed to save store. Please try again.' });
     }
   };
 
-  const ColorInput = ({ label, name, value, onChange, error }) => (
-    <div className="flex flex-col space-y-2">
-      <label htmlFor={name} className="text-sm font-medium text-gray-700">
-        {label}
-      </label>
+  const ColorInput = ({ label, name, value, onChange, error, helpText }) => (
+    <div className="flex flex-col space-y-2 relative">
       <div className="flex items-center space-x-2">
-        <input
-          type="color"
-          id={`${name}-picker`}
-          value={value}
-          onChange={(e) => onChange({ target: { name, value: e.target.value } })}
+        <label htmlFor={name} className="text-sm font-medium text-gray-700">
+          {label}
+        </label>
+        <div className="relative">
+          <HelpCircle
+            className="w-4 h-4 text-gray-400 cursor-help"
+            onMouseEnter={() => showHelpTextWithDelay(name)}
+            onMouseLeave={() => hideHelpText(name)}
+          />
+          {showHelpText[name] && (
+            <div className="absolute z-10 p-2 bg-gray-100 rounded shadow-md text-sm text-gray-700 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48">
+              {helpText}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        <div
           className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer"
+          style={{ backgroundColor: value }}
+          onClick={() => toggleColorPicker(name)}
         />
         <input
           type="text"
@@ -107,6 +179,15 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
           placeholder="#000000"
         />
       </div>
+      {showColorPicker[name] && (
+        <div className="absolute z-20 mt-2" ref={colorPickerRefs[name]}>
+          <ChromePicker
+            color={value}
+            onChange={(color) => handleColorChange(color, name)}
+            disableAlpha
+          />
+        </div>
+      )}
       {error && (
         <p className="text-red-500 text-xs mt-1 flex items-center">
           <AlertCircle className="w-4 h-4 mr-1" />
@@ -164,6 +245,31 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
                 value={store.tag_line}
                 onChange={handleInputChange}
               />
+              <div className="col-span-2">
+                <label htmlFor="banner_image" className="block text-sm font-medium text-gray-700 mb-2">
+                  Banner Image
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    id="banner_image"
+                    name="banner_image"
+                    accept="image/*"
+                    onChange={handleInputChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="banner_image"
+                    className="cursor-pointer bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <Upload className="w-5 h-5 inline-block mr-2" />
+                    Upload Banner
+                  </label>
+                  {bannerPreview && (
+                    <img src={bannerPreview} alt="Banner preview" className="h-20 object-cover rounded-md" />
+                  )}
+                </div>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <ColorInput
@@ -172,6 +278,7 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
                 value={store.primary_color}
                 onChange={handleInputChange}
                 error={errors.primary_color}
+                helpText="Used for navbar, modals, buttons, text color, and badges"
               />
               <ColorInput
                 label="Secondary Color"
@@ -179,6 +286,7 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
                 value={store.secondary_color}
                 onChange={handleInputChange}
                 error={errors.secondary_color}
+                helpText="Used for main page background"
               />
               <ColorInput
                 label="Accent Color"
@@ -186,13 +294,20 @@ const CreateStoreSection = ({ storeData, setStoreData, setActiveSection }) => {
                 value={store.accent_color}
                 onChange={handleInputChange}
                 error={errors.accent_color}
+                helpText="Used for cards and other page components"
               />
             </div>
+            <Alert type="info">
+              <p className="font-medium mb-2">Need help choosing colors?</p>
+              <p className="mb-4">Use our color palette generator to find the perfect combination for your store.</p>
+              <Link to="/cpgenerator" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Go to Color Palette Generator
+              </Link>
+            </Alert>
             {errors.submit && (
-              <p className="text-red-500 text-sm mt-4 flex items-center">
-                <AlertCircle className="w-4 h-4 mr-1" />
+              <Alert type="error">
                 {errors.submit}
-              </p>
+              </Alert>
             )}
             <Button onClick={handleSubmit} className="w-full">
               {storeData ? 'Update Store' : 'Create Store'}

@@ -1,6 +1,10 @@
 Email verification page for visual feedback. 
-Token lifetime, refresh and replacement, delete if expired. (Make sure token is always deleted from storage to avoid conflicts)
 Redirect to dashboard if authenticated, and redirect to auth (from dashboard) if not. (With Auth)!!!!!!!!!!!!!!!!!!!!!!!!
 Add a user profile edit button to vendord dashboard
-
+color palette page
 Change slug together with store name
+add footer with store info
+
+Refresh token and access token handleing...
+
+Banner image input fiels for store creaton and update

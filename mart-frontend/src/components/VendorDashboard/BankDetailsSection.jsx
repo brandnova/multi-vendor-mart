@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '../../config/api';
+// src/components/VendorDashboard/BankDetailsSection.jsx
+
+import React, { useState } from 'react';
+import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, CardHeader, Button, Input } from './UIComponents';
+import * as api from '../../config/api';
 
 export default function BankDetailsSection() {
-  const [bankDetails, setBankDetails] = useState([]);
+  const { bankDetails, setBankDetails } = useVendor();
   const [newBankDetail, setNewBankDetail] = useState({
     bank_name: '',
     account_number: '',
@@ -12,27 +14,6 @@ export default function BankDetailsSection() {
   });
   const [editingBankDetail, setEditingBankDetail] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchBankDetails();
-  }, []);
-
-  const fetchBankDetails = async () => {
-    try {
-      setIsLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/stores/bank-details/list/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBankDetails(response.data);
-    } catch (error) {
-      console.error('Error fetching bank details:', error);
-      setError('Failed to fetch bank details. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,17 +21,14 @@ export default function BankDetailsSection() {
   };
 
   const handleSaveBankDetail = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
-
     try {
       let response;
       if (editingBankDetail) {
-        response = await axios.put(`${API_URL}/stores/bank-details/${editingBankDetail.id}/`, newBankDetail, { headers });
-        setBankDetails(bankDetails.map(detail => detail.id === editingBankDetail.id ? response.data : detail));
+        response = await api.updateBankDetail(editingBankDetail.id, newBankDetail);
+        setBankDetails(bankDetails.map(detail => detail.id === editingBankDetail.id ? response : detail));
       } else {
-        response = await axios.post(`${API_URL}/stores/bank-details/`, newBankDetail, { headers });
-        setBankDetails([...bankDetails, response.data]);
+        response = await api.createBankDetail(newBankDetail);
+        setBankDetails([...bankDetails, response]);
       }
       setNewBankDetail({ bank_name: '', account_number: '', account_name: '' });
       setEditingBankDetail(null);
@@ -62,11 +40,8 @@ export default function BankDetailsSection() {
   };
 
   const handleDeleteBankDetail = async (bankDetailId) => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
-
     try {
-      await axios.delete(`${API_URL}/stores/bank-details/${bankDetailId}/`, { headers });
+      await api.deleteBankDetail(bankDetailId);
       setBankDetails(bankDetails.filter(detail => detail.id !== bankDetailId));
       setError(null);
     } catch (error) {
@@ -83,10 +58,6 @@ export default function BankDetailsSection() {
       account_name: bankDetail.account_name,
     });
   };
-
-  if (isLoading) {
-    return <div>Loading bank details...</div>;
-  }
 
   return (
     <div className="space-y-6">

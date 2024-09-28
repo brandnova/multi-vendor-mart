@@ -356,7 +356,7 @@ const OnlineStore = ({ storeData }) => {
       {showSaveInfoModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.accent}>
-            <h2 className="text-xl font-bold mb-4" style={styles.secondary}>Save Your Information?</h2>
+            <h2 className="text-xl font-bold mb-4">Save Your Information?</h2>
             <p className="mb-4">Would you like to save your checkout information for future orders?</p>
             <div className="flex justify-end space-x-4">
               <button
@@ -367,7 +367,7 @@ const OnlineStore = ({ storeData }) => {
               </button>
               <button
                 className="px-4 py-2 text-white rounded"
-                style={styles.accentBg}
+                style={styles.primary}
                 onClick={() => handleSaveInfo(true)}
               >
                 Yes

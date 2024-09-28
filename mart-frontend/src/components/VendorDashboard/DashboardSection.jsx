@@ -125,7 +125,7 @@ const StatCard = ({ title, value, icon, color }) => (
 );
 
 const getStatusColor = (status) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case 'completed':
       return 'bg-green-100 text-green-800';
     case 'processing':

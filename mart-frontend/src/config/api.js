@@ -3,7 +3,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-export const API_URL = 'http://localhost:8000';
+export const API_URL = 'https://mv.coursearena.com.ng';
 
 const api = axios.create({
   baseURL: API_URL,

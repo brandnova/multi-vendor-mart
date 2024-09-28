@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+# from stores.models import Store
+from django.conf import settings
 
 class SingletonModel(models.Model):
     class Meta:
@@ -38,3 +40,14 @@ class SocialLink(models.Model):
 
     def __str__(self):
         return f"{self.platform} - {self.url}"
+    
+# class Testimonial(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+#     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='testimonials')
+#     text = models.TextField()
+#     is_approved = models.BooleanField(default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+#     def __str__(self):
+#         return f"Testimonial by {self.user.get_full_name()} - {self.store.name}"

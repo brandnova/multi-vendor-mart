@@ -1,5 +1,6 @@
 import React from 'react';
 import { Carousel } from 'react-responsive-carousel';
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { API_URL } from '../config/api';
 
@@ -26,10 +27,10 @@ const FeaturedProducts = ({ products, styles }) => {
                 type="button"
                 onClick={onClickHandler}
                 title={label}
-                style={{ ...styles.primary, position: 'absolute', zIndex: 2, left: 15, top: '50%', width: 40, height: 40, borderRadius: '50%' }}
-                className="hover:opacity-75 transition-opacity duration-300"
+                style={{ ...styles.primary, position: 'absolute', zIndex: 2, left: 15, top: '50%', width: 40, height: 40, borderRadius: '50%', opacity: 0.8, }}
+                className="hover:opacity-75 transition-opacity duration-300 flex items-center justify-center"
               >
-                &lt;
+                <FaChevronLeft className="text-2xl" />
               </button>
             )
           }
@@ -39,10 +40,10 @@ const FeaturedProducts = ({ products, styles }) => {
                 type="button"
                 onClick={onClickHandler}
                 title={label}
-                style={{ ...styles.primary, position: 'absolute', zIndex: 2, right: 15, top: '50%', width: 40, height: 40, borderRadius: '50%' }}
-                className="hover:opacity-75 transition-opacity duration-300"
+                style={{ ...styles.primary, position: 'absolute', zIndex: 2, right: 15, top: '50%', width: 40, height: 40, borderRadius: '50%', opacity: 0.8, }}
+                className="hover:opacity-75 transition-opacity duration-300 flex items-center justify-center"
               >
-                &gt;
+                <FaChevronRight className="text-2xl" />
               </button>
             )
           }
@@ -54,11 +55,11 @@ const FeaturedProducts = ({ products, styles }) => {
                 alt={product.name} 
                 className="w-64 h-64 object-cover mx-auto mb-4 rounded-lg shadow-md"
               />
-              <h3 className="text-xl font-semibold mb-2" style={styles.text}>
+              <span className="text-xl font-semibold mb-2" style={styles.text}>
                 {product.name}
-              </h3>
+              </span>
               <p className="text-gray-600 mb-4">{product.description}</p>
-              <span className="text-2xl font-bold" style={styles.accent}>
+              <span className="text-2xl font-bold" style={styles.text}>
                 ${product.price}
               </span>
             </div>

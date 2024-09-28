@@ -102,14 +102,14 @@ const OnlineStore = ({ storeData }) => {
   const styles = {
     primary: { backgroundColor: storeData.primary_color, color: '#ffffff' },
     secondary: { backgroundColor: storeData.secondary_color, color: storeData.primary_color },
-    accent: { color: storeData.accent_color },
+    accent: { backgroundColor: storeData.accent_color },
     border: { borderColor: storeData.accent_color },
     text: { color: storeData.primary_color },
-    background: { backgroundColor: '#f8f9fa' }, // Light gray background
+    background: { backgroundColor: '#f8f9fa' },
   };
 
   return (
-    <div className="font-sans" style={styles.background}>
+    <div className="font-sans" style={styles.secondary}>
       {/* Navbar */}
       <nav className="p-4 sticky top-0 z-10" style={styles.primary}>
         <div className="container mx-auto flex justify-between items-center">
@@ -164,7 +164,7 @@ const OnlineStore = ({ storeData }) => {
       <FeaturedProducts products={storeData.products} styles={styles} />
 
       {/* Product List */}
-      <section className="py-16">
+      <section className="py-16" style={styles.secondary}>
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-10 text-center" style={styles.text}>Our Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -172,7 +172,7 @@ const OnlineStore = ({ storeData }) => {
               <div
                 key={product.id}
                 className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
-                style={styles.border}
+                style={styles.accent}
               >
                 <img
                   src={`${API_URL}${product.image}`}
@@ -183,7 +183,7 @@ const OnlineStore = ({ storeData }) => {
                   <h3 className="text-xl font-semibold mb-2" style={styles.text}>{product.name}</h3>
                   <p className="text-gray-600 text-sm mb-4">{product.description}</p>
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-2xl font-bold" style={styles.accent}>${product.price}</span>
+                    <span className="text-2xl font-bold px-3 rounded-lg" style={styles.primary}>${product.price}</span>
                     <span className="text-gray-500 text-sm">In stock: {product.quantity}</span>
                   </div>
                   <button
@@ -292,7 +292,7 @@ const OnlineStore = ({ storeData }) => {
                     </div>
                     <button
                       className="w-full text-white py-2 rounded-full transition duration-300 text-sm"
-                      style={styles.accentBg}
+                      style={styles.primary}
                       onClick={handleCheckout}
                     >
                       Checkout
@@ -308,7 +308,7 @@ const OnlineStore = ({ storeData }) => {
       {/* Bank Details Modal */}
       {isBankDetailsOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.secondary}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.accent}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold" style={styles.text}>Bank Details</h2>
               <button
@@ -336,9 +336,9 @@ const OnlineStore = ({ storeData }) => {
       {/* Contact Info Modal */}
       {isContactInfoOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.secondaryBg}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.accent}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold" style={styles.primaryText}>Contact Information</h2>
+              <h2 className="text-xl font-bold" style={styles.text}>Contact Information</h2>
               <button
                 className="text-gray-500 hover:text-gray-700"
                 onClick={() => setIsContactInfoOpen(false)}
@@ -355,8 +355,8 @@ const OnlineStore = ({ storeData }) => {
       {/* Save Info Modal */}
       {showSaveInfoModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.secondaryBg}>
-            <h2 className="text-xl font-bold mb-4" style={styles.primaryText}>Save Your Information?</h2>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={styles.accent}>
+            <h2 className="text-xl font-bold mb-4" style={styles.secondary}>Save Your Information?</h2>
             <p className="mb-4">Would you like to save your checkout information for future orders?</p>
             <div className="flex justify-end space-x-4">
               <button

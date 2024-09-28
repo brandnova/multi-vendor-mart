@@ -1,10 +1,12 @@
+// src/components/VendorDashboard/ManageProductsSection.jsx
+
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '../../config/api';
+import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, CardHeader, Button, Input, TextArea } from './UIComponents';
+import * as api from '../../config/api';
 
 export default function ManageProductsSection() {
-  const [products, setProducts] = useState([]);
+  const { products, setProducts } = useVendor();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -14,28 +16,7 @@ export default function ManageProductsSection() {
   });
   const [editingProductId, setEditingProductId] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setIsLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/stores/products/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProducts(response.data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      setError('Failed to fetch products. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -48,8 +29,6 @@ export default function ManageProductsSection() {
   };
 
   const handleSaveProduct = async () => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' };
     const formDataToSend = new FormData();
     
     Object.keys(formData).forEach(key => {
@@ -61,11 +40,11 @@ export default function ManageProductsSection() {
     try {
       let response;
       if (editingProductId) {
-        response = await axios.patch(`${API_URL}/stores/products/${editingProductId}/`, formDataToSend, { headers });
-        setProducts(products.map(product => product.id === editingProductId ? response.data : product));
+        response = await api.updateProduct(editingProductId, formDataToSend);
+        setProducts(products.map(product => product.id === editingProductId ? response : product));
       } else {
-        response = await axios.post(`${API_URL}/stores/products/`, formDataToSend, { headers });
-        setProducts([...products, response.data]);
+        response = await api.createProduct(formDataToSend);
+        setProducts([...products, response]);
       }
       resetForm();
       setError(null);
@@ -76,11 +55,8 @@ export default function ManageProductsSection() {
   };
 
   const handleDeleteProduct = async (productId) => {
-    const token = localStorage.getItem('token');
-    const headers = { Authorization: `Bearer ${token}` };
-
     try {
-      await axios.delete(`${API_URL}/stores/products/${productId}/`, { headers });
+      await api.deleteProduct(productId);
       setProducts(products.filter(product => product.id !== productId));
       setError(null);
     } catch (error) {
@@ -106,10 +82,6 @@ export default function ManageProductsSection() {
     setEditingProductId(null);
     setImagePreview(null);
   };
-
-  if (isLoading) {
-    return <div>Loading products...</div>;
-  }
 
   return (
     <div className="space-y-6">

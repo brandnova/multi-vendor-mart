@@ -1,48 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '../../config/api';
+// src/components/VendorDashboard/ManageOrdersSection.jsx
+
+import React, { useState } from 'react';
+import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, CardHeader, Button } from './UIComponents';
+import * as api from '../../config/api';
 
 export default function ManageOrdersSection() {
-  const [orders, setOrders] = useState([]);
+  const { orders, setOrders } = useVendor();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      setIsLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/orders/list/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to fetch orders. Please try again.';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const fetchOrderDetails = async (orderId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/orders/${orderId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSelectedOrder(response.data);
+      const response = await api.getOrderDetails(orderId);
+      setSelectedOrder(response);
       setError(null);
     } catch (err) {
       console.error('Error fetching order details:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to fetch order details. Please try again.';
-      setError(errorMessage);
+      setError('Failed to fetch order details. Please try again.');
     }
   };
   
@@ -50,10 +25,7 @@ export default function ManageOrdersSection() {
     if (!window.confirm('Are you sure you want to delete this order?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/orders/${orderId}/delete/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.deleteOrder(orderId);
       setOrders(orders.filter(order => order.id !== orderId));
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder(null);
@@ -61,14 +33,9 @@ export default function ManageOrdersSection() {
       setError(null);
     } catch (err) {
       console.error('Error deleting order:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to delete order. Please try again.';
-      setError(errorMessage);
+      setError('Failed to delete order. Please try again.');
     }
   };
-  
-  if (isLoading) {
-    return <div className="text-center py-4">Loading orders...</div>;
-  }
 
   return (
     <div className="space-y-6">
@@ -77,12 +44,7 @@ export default function ManageOrdersSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900">Order List</h3>
-              <Button onClick={fetchOrders} className="bg-blue-500 hover:bg-blue-600 text-white">
-                Refresh Orders
-              </Button>
-            </div>
+            <h3 className="text-lg font-medium text-gray-900">Order List</h3>
           </CardHeader>
           <CardContent>
             <ul className="divide-y divide-gray-200">
@@ -134,7 +96,7 @@ export default function ManageOrdersSection() {
                 </ul>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No orders selected.</p>
+              <p className="text-sm text-gray-500">No order selected.</p>
             )}
           </CardContent>
         </Card>

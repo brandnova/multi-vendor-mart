@@ -23,12 +23,12 @@ class Store(models.Model):
     )
     secondary_color = models.CharField(
         max_length=7,
-        default="#FFFFFF",
+        default="#e8e8e8",
         validators=[RegexValidator(regex=r'^#([A-Fa-f0-9]{6})$', message='Enter a valid 6-digit hex color code')]
     )
     accent_color = models.CharField(
         max_length=7,
-        default="#808080",
+        default="#FFFFFF",
         validators=[RegexValidator(regex=r'^#([A-Fa-f0-9]{6})$', message='Enter a valid 6-digit hex color code')]
     )
     

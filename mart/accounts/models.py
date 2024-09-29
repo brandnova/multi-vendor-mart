@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from django.db import models
@@ -38,7 +39,7 @@ class EmailVerificationToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + timezone.timedelta(minutes=5)
+            self.expires_at = timezone.now() + timedelta(minutes=5)
         super().save(*args, **kwargs)
 
     @property

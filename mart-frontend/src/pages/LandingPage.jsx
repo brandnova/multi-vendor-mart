@@ -1,36 +1,63 @@
 // src/pages/LandingPage.jsx
 
 import React, { useState, useEffect } from "react";
-import { FaBars, FaTimes, FaStore, FaShoppingCart, FaChartLine, FaLock } from "react-icons/fa";
+import { FaBars, FaTimes, FaStore, FaShoppingCart, FaChartLine, FaLock, FaRegLightbulb, FaUserFriends } from "react-icons/fa";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { Link } from 'react-router-dom';
-import { getSiteSettings } from '../config/api';
+import { motion } from "framer-motion";
+import { getSiteSettings, getRecentStores } from '../config/api';
+import RecentStores from '../components/RecentStores';
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [siteSettings, setSiteSettings] = useState(null);
+  const [recentStores, setRecentStores] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchSiteSettings = async () => {
+    const fetchData = async () => {
       try {
-        const settings = await getSiteSettings();
+        const [settings, stores] = await Promise.all([
+          getSiteSettings(),
+          getRecentStores(6)
+        ]);
         setSiteSettings(settings);
+        setRecentStores(stores);
       } catch (error) {
-        console.error('Error fetching site settings:', error);
+        console.error('Error fetching data:', error);
+        setError('Failed to load page data. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchSiteSettings();
+    fetchData();
   }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  if (!siteSettings) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="h-16 w-16 border-t-4 border-blue-500 rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700">{error}</p>
+        </div>
       </div>
     );
   }
@@ -38,154 +65,236 @@ const LandingPage = () => {
   return (
     <div className="font-sans">
       {/* Navbar */}
-      <nav className="bg-blue-600 text-white p-4 fixed w-full z-10">
+      <nav className="bg-indigo-900 text-white p-4 fixed w-full z-20">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold">{siteSettings.site_name}</Link>
           <div className="hidden md:flex space-x-4">
-            <a href="#benefits" className="hover:text-blue-200">Benefits</a>
-            <a href="#features" className="hover:text-blue-200">Features</a>
-            <a href="#get-started" className="hover:text-blue-200">Get Started</a>
-            {/* <a href="#testimonials" className="hover:text-blue-200">Testimonials</a> */}
+            <a href="#benefits" className="hover:text-indigo-300 transition duration-300">Benefits</a>
+            <a href="#features" className="hover:text-indigo-300 transition duration-300">Features</a>
+            <a href="#how-it-works" className="hover:text-indigo-300 transition duration-300">How It Works</a>
+            <a href="#testimonials" className="hover:text-indigo-300 transition duration-300">Testimonials</a>
+            <a href="#recent-stores" className="hover:text-indigo-300 transition duration-300">Our Vendors</a>
           </div>
           <button className="md:hidden" onClick={toggleMenu}>
             {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
           </button>
         </div>
         {isMenuOpen && (
-          <div className="md:hidden bg-blue-500 mt-2 p-4">
-            <a href="#benefits" className="block py-2">Benefits</a>
-            <a href="#features" className="block py-2">Features</a>
-            <a href="#get-started" className="block py-2">Get Started</a>
-            {/* <a href="#testimonials" className="block py-2">Testimonials</a> */}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-indigo-800 mt-2 p-4"
+          >
+            <a href="#benefits" className="block py-2 hover:text-indigo-300">Benefits</a>
+            <a href="#features" className="block py-2 hover:text-indigo-300">Features</a>
+            <a href="#how-it-works" className="block py-2 hover:text-indigo-300">How It Works</a>
+            <a href="#testimonials" className="block py-2 hover:text-indigo-300">Testimonials</a>
+            <a href="#recent-stores" className="block py-2 hover:text-indigo-300">Our Vendors</a>
+          </motion.div>
         )}
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-500 to-purple-600 text-white pt-24 pb-16">
-        <div className="container mx-auto text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">Empower Your Business with {siteSettings.site_name}</h1>
-          <p className="text-xl mb-8">{siteSettings.tagline}</p>
-          <Link to="/auth" className="bg-yellow-400 text-blue-900 font-bold py-3 px-8 rounded-full hover:bg-yellow-300 transition duration-300">Get Started Now</Link>
+      <section className="h-screen bg-gradient-to-r from-indigo-900 via-purple-800 to-indigo-900 text-white pt-52 pb-16 relative overflow-hidden">
+        <div className="container my-auto mx-auto text-center px-4 relative z-10">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl md:text-6xl font-bold mb-6"
+          >
+            Empower Your Business with {siteSettings.site_name}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-xl mb-8"
+          >
+            {siteSettings.tagline}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Link to="/auth" className="bg-yellow-400 text-indigo-900 font-bold py-3 px-8 rounded-full hover:bg-yellow-300 transition duration-300">
+              Get Started Now
+            </Link>
+          </motion.div>
         </div>
-        <div className="mt-12 flex justify-center">
-          <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df" alt={siteSettings.site_name} className="rounded-lg shadow-2xl max-w-full h-auto" />
+        <div className="absolute inset-0 z-0 opacity-20">
+          <motion.img
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.6 }}
+            src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df"
+            alt="Background"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+            <path fill="#ffffff" fillOpacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+          </svg>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-16 bg-gray-100">
+      <section id="benefits" className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose {siteSettings.site_name}?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-indigo-900">Why Choose {siteSettings.site_name}?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-500 text-white rounded-full p-4 inline-block mb-4">
-                <FaStore size={32} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Low Fees</h3>
-              <p>Enjoy competitive rates that maximize your profits</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-green-500 text-white rounded-full p-4 inline-block mb-4">
-                <IoMdCheckmarkCircleOutline size={32} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Easy Setup</h3>
-              <p>Get your store up and running in minutes, not days</p>
-            </div>
-            <div className="text-center">
-              <div className="bg-purple-500 text-white rounded-full p-4 inline-block mb-4">
-                <FaChartLine size={32} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Growth Tools</h3>
-              <p>Access powerful analytics to scale your business</p>
-            </div>
+            {[
+              { icon: FaStore, title: "Low Fees", description: "Enjoy competitive rates that maximize your profits", color: "bg-green-500" },
+              { icon: IoMdCheckmarkCircleOutline, title: "Easy Setup", description: "Get your store up and running in minutes, not days", color: "bg-blue-500" },
+              { icon: FaChartLine, title: "Growth Tools", description: "Access powerful analytics to scale your business", color: "bg-purple-500" },
+            ].map((benefit, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div className={`${benefit.color} text-white rounded-full p-4 inline-block mb-4`}>
+                  <benefit.icon size={32} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-indigo-900">{benefit.title}</h3>
+                <p className="text-gray-600">{benefit.description}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16">
+      <section id="features" className="py-16 bg-gray-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Powerful Features for Your Success</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-indigo-900">Powerful Features for Your Success</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <FaStore className="text-blue-500 mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">Custom Store Creation</h3>
-              <p>Design your unique storefront with our intuitive tools</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <FaShoppingCart className="text-green-500 mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">Order Tracking</h3>
-              <p>Real-time updates on all your orders in one place</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <FaChartLine className="text-purple-500 mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">Analytics Dashboard</h3>
-              <p>Gain insights with comprehensive sales and traffic data</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <FaLock className="text-red-500 mb-4" size={32} />
-              <h3 className="text-xl font-semibold mb-2">Secure Payments</h3>
-              <p>Multiple payment options with top-notch security</p>
-            </div>
+            {[
+              { icon: FaStore, title: "Custom Store Creation", description: "Design your unique storefront with our intuitive tools", color: "text-blue-500" },
+              { icon: FaShoppingCart, title: "Order Tracking", description: "Real-time updates on all your orders in one place", color: "text-green-500" },
+              { icon: FaChartLine, title: "Analytics Dashboard", description: "Gain insights with comprehensive sales and traffic data", color: "text-purple-500" },
+              { icon: FaLock, title: "Secure Transactions", description: "Bank transfer system for safe and easy payments", color: "text-red-500" },
+              { icon: FaRegLightbulb, title: "Product Management", description: "Effortlessly manage your product catalog", color: "text-yellow-500" },
+              { icon: FaUserFriends, title: "Customer Management", description: "Build and maintain customer relationships", color: "text-indigo-500" },
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300"
+              >
+                <feature.icon className={`${feature.color} mb-4`} size={32} />
+                <h3 className="text-xl font-semibold mb-2 text-indigo-900">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Get Started Section */}
-      <section id="get-started" className="py-16 bg-blue-50">
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-16 bg-indigo-100">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Get Started in 3 Easy Steps</h2>
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center mb-8">
-              <div className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">1</div>
-              <p className="text-lg">Sign up for a free account</p>
-            </div>
-            <div className="flex items-center mb-8">
-              <div className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">2</div>
-              <p className="text-lg">Customize your store profile</p>
-            </div>
-            <div className="flex items-center mb-12">
-              <div className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">3</div>
-              <p className="text-lg">Add your products and start selling</p>
-            </div>
-            <form className="bg-white p-8 rounded-lg shadow-md">
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 font-bold mb-2">Email Address</label>
-                <input type="email" id="email" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="you@example.com" required />
-              </div>
-              <div className="mb-6">
-                <label htmlFor="password" className="block text-gray-700 font-bold mb-2">Password</label>
-                <input type="password" id="password" className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" required />
-              </div>
-              <button type="submit" className="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300">Create Your Account</button>
-            </form>
+          <h2 className="text-3xl font-bold text-center mb-12 text-indigo-900">How It Works</h2>
+          <div className="max-w-4xl mx-auto">
+            {[
+              { step: 1, title: "Sign Up", description: "Create your free account in minutes" },
+              { step: 2, title: "Set Up Your Store", description: "Customize your store profile and add products" },
+              { step: 3, title: "Receive Orders", description: "Customers place orders through your custom URL" },
+              { step: 4, title: "Process Payments", description: "Receive payments via bank transfer" },
+              { step: 5, title: "Fulfill Orders", description: "Ship products to your customers" },
+            ].map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="flex items-center mb-8"
+              >
+                <div className="bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">
+                  {step.step}
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-indigo-900">{step.title}</h3>
+                  <p className="text-gray-600">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      
+      <section id="testimonials" className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-indigo-900">What Our Vendors Say</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { name: "John Doe", business: "Artisan Crafts", quote: "Thanks to this platform, I've been able to reach customers I never thought possible!" },
+              { name: "Jane Smith", business: "Organic Foods", quote: "The simplicity of the setup process allowed me to focus on what I do best - creating great products." },
+              { name: "Mike Johnson", business: "Vintage Collectibles", quote: "The analytics tools have been a game-changer for understanding my customer base." },
+            ].map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-indigo-50 p-6 rounded-lg shadow-md"
+              >
+                <p className="italic mb-4 text-gray-700">"{testimonial.quote}"</p>
+                <p className="font-semibold text-indigo-900">{testimonial.name}</p>
+                <p className="text-sm text-indigo-600">{testimonial.business}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Stores Section */}
+      <section id="recent-stores" className="py-16 bg-gray-100">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-indigo-900">Join Our Growing Community of Vendors</h2>
+          <RecentStores stores={recentStores} />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-indigo-900 via-purple-800 to-indigo-900 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">Ready to Start Your Journey?</h2>
+          <p className="text-xl mb-8">Join thousands of vendors who have found success with {siteSettings.site_name}</p>
+          <Link to="/auth" className="bg-yellow-400 text-indigo-900 font-bold py-3 px-8 rounded-full hover:bg-yellow-300 transition duration-300">
+            Create Your Store Now
+          </Link>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8">
+      <footer className="bg-indigo-900 text-white py-8">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-between items-center">
-            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
               <h3 className="text-2xl font-bold mb-2">{siteSettings.site_name}</h3>
-              <p>{siteSettings.tagline}</p>
+              <p className="text-indigo-200">{siteSettings.tagline}</p>
             </div>
-            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+            <div>
               <h4 className="text-lg font-semibold mb-2">Contact Us</h4>
-              <p>Email: {siteSettings.contact_email}</p>
-              <p>Phone: {siteSettings.contact_phone}</p>
+              <p className="text-indigo-200">Email: {siteSettings.contact_email}</p>
+              <p className="text-indigo-200">Phone: {siteSettings.contact_phone}</p>
               <p>{siteSettings.address}</p>
             </div>
-            <div className="w-full md:w-1/3">
+            <div>
               <h4 className="text-lg font-semibold mb-2">Follow Us</h4>
               <div className="flex space-x-4">
                 {siteSettings.social_links.map((link, index) => (
-                  <a key={index} href={link.url} className="hover:text-blue-400">
+                  <a key={index} href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition duration-300">
                     <FaStore size={24} />
                   </a>
                 ))}
@@ -193,7 +302,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="mt-8 text-center">
-            <p>&copy; 2024 {siteSettings.site_name}. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} {siteSettings.site_name}. All rights reserved.</p>
           </div>
         </div>
       </footer>

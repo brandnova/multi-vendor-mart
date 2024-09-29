@@ -44,7 +44,7 @@ export default function ManageProductsSection() {
         setProducts(products.map(product => product.id === editingProductId ? response : product));
       } else {
         response = await api.createProduct(formDataToSend);
-        setProducts([...products, response]);
+        setProducts([response, ...products]);
       }
       resetForm();
       setError(null);
@@ -150,10 +150,10 @@ export default function ManageProductsSection() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-indigo-600 truncate">{product.name}</h4>
-                      <p className="mt-1 text-sm text-gray-600">{product.description}</p>
+                      <p className="mt-1 text-sm text-gray-600 truncate">{product.description}</p>
                     </div>
                     <div className="ml-4 flex-shrink-0">
-                      <p className="text-sm font-medium text-gray-900">${product.price}</p>
+                      <p className="text-sm font-medium text-gray-900">₦{parseFloat(product.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       <p className="mt-1 text-sm text-gray-500">In stock: {product.quantity}</p>
                     </div>
                     <div className="ml-4">

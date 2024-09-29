@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import VendorDashboard from './pages/VendorDashboard';
@@ -14,6 +14,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
         <Route path="/verify-email/:token" element={<EmailVerificationPage />} />
         <Route path="/dashboard" element={<VendorDashboard />} />
         <Route path="/cpgenerator" element={<ColorPaletteGenerator />} />

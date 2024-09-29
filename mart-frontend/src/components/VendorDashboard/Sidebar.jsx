@@ -18,19 +18,15 @@ const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
       onClick={disabled ? null : onClick}
     >
       <div className="flex items-center">
-        <Icon />
-        {isOpen && <span className="ml-3">{label}</span>}
+        <Icon className="w-6 h-6" />
+        <span className={`ml-3 ${isOpen ? 'inline' : 'hidden md:inline'}`}>{label}</span>
       </div>
     </div>
   );
 
   return (
-    <div
-      className={`bg-gray-800 h-screen ${
-        isOpen ? 'w-64' : 'w-16'
-      } transition-all duration-300 overflow-y-auto`}
-    >
-      <div className="flex flex-col h-full">
+    <div className="bg-gray-800 h-full w-64 md:w-auto overflow-y-auto">
+      <div className="flex flex-col h-full py-4">
         <SidebarItem
           icon={FaHome}
           label="Dashboard"
@@ -71,13 +67,13 @@ const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
           onClick={() => setActiveSection('profile')}
         />
         
-        <div className="mt-auto px-4 py-3">
+        <div className="mt-auto">
           <div
-            className="flex items-center cursor-pointer text-gray-400 hover:bg-gray-700 hover:text-white rounded-md ps-2 py-2"
+            className="flex items-center cursor-pointer text-gray-400 hover:bg-gray-700 hover:text-white rounded-md px-4 py-3"
             onClick={logout}
           >
-            <FaSignOutAlt />
-            {isOpen && <span className="ml-3">Logout</span>}
+            <FaSignOutAlt className="w-6 h-6" />
+            <span className={`ml-3 ${isOpen ? 'inline' : 'hidden md:inline'}`}>Logout</span>
           </div>
         </div>
       </div>

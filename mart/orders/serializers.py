@@ -10,11 +10,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
+    status = serializers.CharField(read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'store', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'total_amount', 'created_at', 'items']
-        read_only_fields = ['store', 'total_amount']
+        fields = ['id', 'store', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'total_amount', 'status', 'created_at', 'items']
+        read_only_fields = ['store', 'total_amount', 'status']
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
@@ -23,7 +24,6 @@ class OrderSerializer(serializers.ModelSerializer):
         order.total_amount = total_amount
         order.save()
 
-        # Optionally, create order items here
         for item_data in items_data:
             OrderItem.objects.create(order=order, **item_data)
 

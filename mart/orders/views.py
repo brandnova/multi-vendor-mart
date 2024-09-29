@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
+from rest_framework.views import APIView
 from stores.serializers import ProductSerializer
 from .models import Order
 from .serializers import OrderSerializer
@@ -66,3 +66,17 @@ class OrderDeleteView(generics.DestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"message": "Order deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    
+class UpdateOrderStatusView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsStoreOwner]
+
+    def put(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
+        new_status = request.data.get('status')
+        if new_status not in dict(Order.STATUS_CHOICES):
+            return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
+        order.status = new_status
+        order.save()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)

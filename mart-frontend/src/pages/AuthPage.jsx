@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, register } from '../config/api';
+import { login, register, checkEmailVerification } from '../config/api';
 import { Alert, Modal, Input, Button } from '../components/VendorDashboard/UIComponents';
 
 const AuthPage = () => {
@@ -47,34 +47,36 @@ const AuthPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
     if (isLogin) {
-      login(formData.email, formData.password)
-        .then(data => {
-          console.log('Login successful', data);
+      try {
+        const verificationStatus = await checkEmailVerification(formData.email);
+        if (!verificationStatus.is_verified) {
+          navigate('/verify-email', { state: { email: formData.email } });
+        } else {
+          const data = await login(formData.email, formData.password);
           navigate('/dashboard');
-        })
-        .catch(error => {
-          console.error('Auth error:', error);
-          setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
-        })
-        .finally(() => setIsLoading(false));
+        }
+      } catch (error) {
+        console.error('Auth error:', error);
+        setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      const { confirmPassword, ...registrationData } = formData;
-      register(registrationData)
-        .then(() => {
-          setShowModal(true);
-          setIsLogin(true);
-        })
-        .catch(error => {
-          console.error('Auth error:', error);
-          setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
-        })
-        .finally(() => setIsLoading(false));
+      try {
+        await register(formData);
+        navigate('/verify-email', { state: { email: formData.email } });
+      } catch (error) {
+        console.error('Auth error:', error);
+        setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

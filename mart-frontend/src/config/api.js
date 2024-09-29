@@ -3,7 +3,8 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-export const API_URL = 'https://mv.coursearena.com.ng';
+// export const API_URL = 'https://mv.coursearena.com.ng';
+export const API_URL = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -112,6 +113,24 @@ const cacheGet = async (url, options = {}) => {
   return response.data;
 };
 
+export const checkEmailVerification = async (email) => {
+  try {
+    const response = await api.post('/accounts/check-activation/', { email });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('An unexpected error occurred');
+  }
+};
+
+export const getVerificationSettings = async () => {
+  try {
+    const response = await api.get('/accounts/verification-settings/');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('An unexpected error occurred');
+  }
+};
+
 export const verifyEmail = async (token) => {
   try {
     const response = await api.get(`/accounts/verify-email/${token}/`);
@@ -136,6 +155,24 @@ export const getSiteSettings = async () => {
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('An unexpected error occurred');
+  }
+};
+
+export const getRecentStores = async (limit = 5) => {
+  try {
+    const response = await api.get(`/stores/recent/?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('An unexpected error occurred');
+  }
+};
+
+export const updateOrderStatus = async (orderId, newStatus) => {
+  try {
+    const response = await api.put(`/orders/${orderId}/update-status/`, { status: newStatus });
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
   }
 };
 

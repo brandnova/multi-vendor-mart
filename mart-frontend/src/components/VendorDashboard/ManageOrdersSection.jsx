@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, CardHeader, Button, Alert } from './UIComponents';
+import { FaEye, FaTrash } from "react-icons/fa";
 import api, { updateOrderStatus } from '../../config/api';
 
 export default function ManageOrdersSection() {
@@ -91,10 +92,10 @@ export default function ManageOrdersSection() {
                     </div>
                     <div className="space-x-2">
                       <Button onClick={() => fetchOrderDetails(order.id)} className="bg-green-500 hover:bg-green-600 text-white">
-                        View Details
+                        <FaEye />
                       </Button>
                       <Button onClick={() => deleteOrder(order.id)} className="bg-red-500 hover:bg-red-600 text-white">
-                        Delete
+                        <FaTrash />
                       </Button>
                     </div>
                   </div>

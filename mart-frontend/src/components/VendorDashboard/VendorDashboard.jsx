@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { FaBars, FaUser } from 'react-icons/fa';
+import { motion } from "framer-motion";
 import Sidebar from './Sidebar';
 import DashboardSection from './DashboardSection';
 import CreateStoreSection from './CreateStoreSection';
@@ -36,7 +37,11 @@ const VendorDashboard = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="h-16 w-16 border-t-4 border-blue-500 rounded-full"
+        />
       </div>
     );
   }

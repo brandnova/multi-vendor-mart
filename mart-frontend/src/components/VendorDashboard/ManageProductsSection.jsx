@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, CardHeader, Button, Input, TextArea } from './UIComponents';
+import { FaPen, FaTrash } from "react-icons/fa";
 import * as api from '../../config/api';
 
 export default function ManageProductsSection() {
@@ -157,8 +158,12 @@ export default function ManageProductsSection() {
                       <p className="mt-1 text-sm text-gray-500">In stock: {product.quantity}</p>
                     </div>
                     <div className="ml-4">
-                      <Button onClick={() => startEditing(product)} className="mr-2">Edit</Button>
-                      <Button onClick={() => handleDeleteProduct(product.id)} className="bg-red-500 hover:bg-red-600">Delete</Button>
+                      <Button onClick={() => startEditing(product)} className="mr-2">
+                        <FaPen />
+                      </Button>
+                      <Button onClick={() => handleDeleteProduct(product.id)} className="bg-red-500 hover:bg-red-600">
+                        <FaTrash />
+                      </Button>
                     </div>
                   </div>
                 </li>

@@ -23,3 +23,8 @@ class StoreSerializer(serializers.ModelSerializer):
         if 'name' in validated_data:
             instance.save(update_fields=['slug'])
         return instance
+    
+class RecentStoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Store
+        fields = ['id', 'name', 'slug', 'tag_line', 'banner_image', 'primary_color', 'secondary_color', 'accent_color']

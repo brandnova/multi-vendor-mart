@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../config/api';
+import { motion } from "framer-motion";
 import OnlineStore from './OnlineStore';
 
 export default function PublicStorePage() {
@@ -29,7 +30,11 @@ export default function PublicStorePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="h-16 w-16 border-t-4 border-blue-500 rounded-full"
+        />
       </div>
     );
   }

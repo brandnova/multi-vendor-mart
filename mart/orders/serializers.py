@@ -10,11 +10,19 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
+    payment_proof = serializers.FileField(required=False)
 
     class Meta:
         model = Order
-        fields = ['id', 'store', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'total_amount', 'created_at', 'items']
-        read_only_fields = ['store', 'total_amount']
+        fields = ['id', 'store', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'total_amount', 'status', 'payment_proof', 'tracking_number', 'created_at', 'items']
+        read_only_fields = ['store', 'total_amount', 'status', 'tracking_number']
+
+    def update(self, instance, validated_data):
+        payment_proof = validated_data.get('payment_proof')
+        if payment_proof:
+            instance.payment_proof = payment_proof
+            instance.save()
+        return instance
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
@@ -23,7 +31,6 @@ class OrderSerializer(serializers.ModelSerializer):
         order.total_amount = total_amount
         order.save()
 
-        # Optionally, create order items here
         for item_data in items_data:
             OrderItem.objects.create(order=order, **item_data)
 

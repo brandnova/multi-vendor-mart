@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Store, BankDetails, Product
-from .serializers import StoreSerializer, BankDetailsSerializer, ProductSerializer
+from .serializers import StoreSerializer, BankDetailsSerializer, ProductSerializer, RecentStoreSerializer
 from django.shortcuts import get_object_or_404
 
 class IsVerifiedVendor(permissions.BasePermission):
@@ -80,3 +80,21 @@ class PublicStoreView(generics.RetrieveAPIView):
         data = serializer.data
         data['products'] = product_serializer.data
         return Response(data)
+
+class RecentStoresView(generics.ListAPIView):
+    serializer_class = RecentStoreSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        limit = self.request.query_params.get('limit', 6)
+        try:
+            limit = int(limit)
+        except ValueError:
+            limit = 6
+
+        return Store.objects.filter(is_active=True).order_by('-created_at')[:limit]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

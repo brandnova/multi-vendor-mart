@@ -1,5 +1,3 @@
-# stores/urls.py
-
 from django.urls import path
 from .views import (
     StoreCreateView,
@@ -10,6 +8,7 @@ from .views import (
     ProductListCreateView,
     ProductDetailView,
     PublicStoreView,
+    RecentStoresView,
 )
 
 urlpatterns = [
@@ -20,5 +19,6 @@ urlpatterns = [
     path('bank-details/<int:pk>/', BankDetailsDetailView.as_view(), name='bank-details-detail'),
     path('products/', ProductListCreateView.as_view(), name='product-list-create'),
     path('products/<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
+    path('recent/', RecentStoresView.as_view(), name='recent-stores'),
     path('<slug:slug>/', PublicStoreView.as_view(), name='public-store-view'),
 ]

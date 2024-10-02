@@ -31,8 +31,7 @@ class Store(models.Model):
         default="#FFFFFF",
         validators=[RegexValidator(regex=r'^#([A-Fa-f0-9]{6})$', message='Enter a valid 6-digit hex color code')]
     )
-    
-    
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)

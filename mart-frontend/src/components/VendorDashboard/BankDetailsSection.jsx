@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, CardHeader, Button, Input } from './UIComponents';
+import { FaPen, FaTrash } from "react-icons/fa";
 import * as api from '../../config/api';
 
 export default function BankDetailsSection() {
@@ -108,8 +109,12 @@ export default function BankDetailsSection() {
                   <p className="text-gray-600">Account Name: {detail.account_name}</p>
                 </div>
                 <div>
-                  <Button onClick={() => startEditing(detail)} className="mr-2">Edit</Button>
-                  <Button onClick={() => handleDeleteBankDetail(detail.id)} className="bg-red-500 hover:bg-red-600">Delete</Button>
+                  <Button onClick={() => startEditing(detail)} className="mr-2">
+                    <FaPen />
+                  </Button>
+                  <Button onClick={() => handleDeleteBankDetail(detail.id)} className="bg-red-500 hover:bg-red-600">
+                    <FaTrash />
+                  </Button>
                 </div>
               </li>
             ))

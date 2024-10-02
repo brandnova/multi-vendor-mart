@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
@@ -169,3 +170,40 @@ class LogoutView(APIView):
             response = Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
             response.delete_cookie('refresh_token')
             return response
+        
+class CheckEmailVerificationView(APIView):
+    permission_classes = []  # Allow any user to access this view
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            User = get_user_model()
+            user = User.objects.get(email=email)
+            if user.is_email_verified:
+                return Response({'is_verified': True})
+            
+            token = EmailVerificationToken.objects.filter(user=user).first()
+            if token:
+                return Response({
+                    'is_verified': False,
+                    'token_exists': True,
+                    'is_expired': token.is_expired,
+                    'max_attempts_reached': token.max_attempts_reached,
+                    'cooldown_time': (token.expires_at - timezone.now()).total_seconds() if not token.is_expired else 0
+                })
+            else:
+                return Response({'is_verified': False, 'token_exists': False})
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class VerificationSettingsView(APIView):
+    permission_classes = []  # Allow any user to access this view
+
+    def get(self, request):
+        return Response({
+            'max_resend_attempts': 3,
+            'cooldown_time': 300,  # 5 minutes in seconds
+        })

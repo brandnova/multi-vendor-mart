@@ -1,50 +1,45 @@
+// src/pages/EmailVerificationPage.jsx
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { verifyEmail, resendVerificationEmail, getSiteSettings } from '../config/api';
-import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Input } from '../components/VendorDashboard/UIComponents';
-import { CheckCircle, XCircle, RefreshCw, Mail } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { verifyEmail, resendVerificationEmail } from '../config/api';
+import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Modal } from '../components/VendorDashboard/UIComponents';
 
 const EmailVerificationPage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState('verifying');
+  const location = useLocation();
+  const [status, setStatus] = useState('initial');
   const [message, setMessage] = useState('');
+  const [countdown, setCountdown] = useState(0);
   const [email, setEmail] = useState('');
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [siteSettings, setSiteSettings] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const fetchSiteSettings = async () => {
-      try {
-        const settings = await getSiteSettings();
-        setSiteSettings(settings);
-      } catch (error) {
-        console.error('Error fetching site settings:', error);
-      }
-    };
-
-    fetchSiteSettings();
-
     if (token) {
       verifyEmailToken();
+    } else if (location.state && location.state.email) {
+      setEmail(location.state.email);
+      setStatus('waiting');
     } else {
-      setStatus('resend');
+      navigate('/auth');
     }
-  }, [token]);
+  }, [token, navigate, location.state]);
 
   useEffect(() => {
     let timer;
-    if (resendCooldown > 0) {
-      timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     }
     return () => clearTimeout(timer);
-  }, [resendCooldown]);
+  }, [countdown]);
 
   const verifyEmailToken = async () => {
     try {
       const response = await verifyEmail(token);
       setStatus('success');
       setMessage(response.message);
+      setShowModal(true);
     } catch (error) {
       setStatus('error');
       setMessage(error.message || 'An unexpected error occurred during verification');
@@ -56,94 +51,57 @@ const EmailVerificationPage = () => {
       await resendVerificationEmail(email);
       setStatus('resent');
       setMessage('Verification email sent successfully. Please check your inbox.');
-      setResendCooldown(300); // 5 minutes cooldown
+      setCountdown(300); // 5 minutes cooldown
     } catch (error) {
       setStatus('error');
       setMessage(error.message || 'Failed to resend verification email');
     }
   };
 
-  const handleContactSupport = () => {
-    if (siteSettings && siteSettings.contact_email) {
-      window.location.href = `mailto:${siteSettings.contact_email}?subject=Email Verification Support`;
-    }
-  };
-
   const renderContent = () => {
     switch (status) {
-      case 'verifying':
+      case 'initial':
+      case 'waiting':
         return (
-          <div className="text-center" aria-live="polite">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto" role="status">
-              <span className="sr-only">Verifying...</span>
-            </div>
-            <p className="mt-4 text-gray-600">Verifying your email...</p>
-          </div>
-        );
-      case 'success':
-        return (
-          <Alert type="success">
-            <div className="flex items-center">
-              <CheckCircle className="w-6 h-6 mr-2 text-green-500" />
-              <h2 className="text-2xl font-bold">Email Verified</h2>
-            </div>
-            <p className="mt-2 mb-4">{message}</p>
-            <Button onClick={() => navigate('/auth')} className="w-full">Go to Login</Button>
-          </Alert>
-        );
-      case 'error':
-        return (
-          <Alert type="error">
-            <div className="flex items-center">
-              <XCircle className="w-6 h-6 mr-2 text-red-500" />
-              <h2 className="text-2xl font-bold">Verification Failed</h2>
-            </div>
-            <p className="mt-2 mb-4">{message}</p>
-            <div className="space-y-4">
-              <Button onClick={() => setStatus('resend')} className="w-full">Resend Verification Email</Button>
-              <Button onClick={handleContactSupport} className="w-full bg-gray-500 hover:bg-gray-600">
-                <Mail className="w-4 h-4 mr-2" />
-                Contact Support
-              </Button>
-            </div>
-          </Alert>
-        );
-      case 'resend':
-        return (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Resend Verification Email</h2>
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mb-4"
-            />
+          <>
+            <Alert type="info">An activation link was sent to your email. Please check your inbox and click the link to activate your account.</Alert>
             <Button
               onClick={handleResendEmail}
-              disabled={resendCooldown > 0}
-              className="w-full mb-4"
+              disabled={countdown > 0}
+              className="mt-4 w-full"
             >
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email'}
+              {countdown > 0
+                ? `Resend email (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')})`
+                : "Didn't get an email? Resend link"}
             </Button>
-            <Button onClick={handleContactSupport} className="w-full bg-gray-500 hover:bg-gray-600">
-              <Mail className="w-4 h-4 mr-2" />
-              Contact Support
-            </Button>
-          </div>
+          </>
         );
       case 'resent':
         return (
-          <Alert type="success">
-            <div className="flex items-center">
-              <RefreshCw className="w-6 h-6 mr-2 text-green-500" />
-              <h2 className="text-2xl font-bold">Email Sent</h2>
-            </div>
-            <p className="mt-2 mb-4">{message}</p>
-            <p className="text-sm text-gray-600 mb-4">
-              You can request another verification email in {resendCooldown} seconds.
+          <>
+            <Alert type="success">{message}</Alert>
+            <p className="mt-4 text-center text-sm text-gray-600">
+              You can request another verification email in {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')} minutes.
             </p>
-          </Alert>
+          </>
+        );
+      case 'success':
+        return (
+          <>
+            <Alert type="success">{message}</Alert>
+            <Button onClick={() => navigate('/auth')} className="mt-4 w-full">
+              Go to Login
+            </Button>
+          </>
+        );
+      case 'error':
+        return (
+          <>
+            <Alert type="error">{message}</Alert>
+            <Button onClick={handleResendEmail} className="mt-4 w-full">
+              Resend verification email
+            </Button>
+          </>
         );
       default:
         return null;
@@ -151,15 +109,26 @@ const EmailVerificationPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Email Verification</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {renderContent()}
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Email Verification
+        </h2>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <Card>
+          <CardContent>{renderContent()}</CardContent>
+        </Card>
+      </div>
+
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+        <CardTitle>Verification Successful</CardTitle>
+        <p className="mt-2">Your email has been successfully verified. You can now log in to your account.</p>
+        <Button onClick={() => navigate('/auth')} className="mt-4 w-full">
+          Go to Login
+        </Button>
+      </Modal>
     </div>
   );
 };

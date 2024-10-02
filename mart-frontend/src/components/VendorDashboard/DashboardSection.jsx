@@ -1,3 +1,5 @@
+// src/components/VendorDashboard/DashboardSection.jsx
+
 import React from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { FaNairaSign } from "react-icons/fa6";
@@ -8,7 +10,7 @@ import { Link } from 'react-router-dom';
 const DashboardSection = () => {
   const { storeData, products, orders } = useVendor();
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
+  const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
   const totalOrders = orders.length;
   const totalProducts = products.length;
 
@@ -53,7 +55,7 @@ const DashboardSection = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <StatCard
           title="Total Revenue"
-          value={`₦${totalRevenue.toLocaleString()}`}
+          value={`₦${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={<FaNairaSign className="w-6 h-6 md:w-8 md:h-8" />}
           color={storeData.primary_color}
         />
@@ -61,13 +63,13 @@ const DashboardSection = () => {
           title="Total Orders"
           value={totalOrders}
           icon={<ShoppingCart className="w-6 h-6 md:w-8 md:h-8" />}
-          color={storeData.secondary_color}
+          color={storeData.primary_color}
         />
         <StatCard
           title="Total Products"
           value={totalProducts}
           icon={<Package className="w-6 h-6 md:w-8 md:h-8" />}
-          color={storeData.accent_color}
+          color={storeData.primary_color}
         />
       </div>
 
@@ -92,10 +94,10 @@ const DashboardSection = () => {
                     <tr key={order.id} className="border-b last:border-b-0">
                       <td className="py-2 pr-4">{order.id}</td>
                       <td className="py-2 pr-4">{new Date(order.created_at).toLocaleDateString()}</td>
-                      <td className="py-2 pr-4">₦{order.total_amount.toLocaleString()}</td>
+                      <td className="py-2 pr-4">₦{parseFloat(order.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="py-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {order.status}
+                          {order.status || 'Pending'}
                         </span>
                       </td>
                     </tr>
@@ -113,7 +115,7 @@ const DashboardSection = () => {
 };
 
 const StatCard = ({ title, value, icon, color }) => (
-  <Card className="flex items-center p-4 md:p-6" style={{ borderColor: color }}>
+  <Card style={{ borderColor: color }}>
     <div className="mr-4" style={{ color }}>
       {icon}
     </div>
@@ -125,7 +127,7 @@ const StatCard = ({ title, value, icon, color }) => (
 );
 
 const getStatusColor = (status) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case 'completed':
       return 'bg-green-100 text-green-800';
     case 'processing':

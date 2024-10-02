@@ -1,0 +1,31 @@
+<!-- templates/order_confirmation.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+</head>
+<body>
+    <h1>Order Confirmation</h1>
+    <p>Dear {{ order.customer_name }},</p>
+    <p>Thank you for your order. Your order details are as follows:</p>
+    
+    <h2>Order Information</h2>
+    <p>Order Number: {{ order.id }}</p>
+    <p>Tracking Number: {{ order.tracking_number }}</p>
+    <p>Total Amount: ${{ order.total_amount }}</p>
+    
+    <h2>Order Items</h2>
+    <ul>
+    {% for item in order.items.all %}
+        <li>{{ item.product.name }} - Quantity: {{ item.quantity }} - Price: ${{ item.price }}</li>
+    {% endfor %}
+    </ul>
+    
+    <p>You can track your order status using the tracking number: {{ order.tracking_number }}</p>
+    
+    <p>Thank you for shopping with us!</p>
+</body>
+</html>

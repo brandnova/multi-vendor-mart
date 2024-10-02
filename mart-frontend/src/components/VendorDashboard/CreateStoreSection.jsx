@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useVendor } from '../../context/VendorContext';
-import { Card, CardContent, CardHeader, Button, Input, Alert } from './UIComponents';
+import { Card, CardContent, Button, Input, Alert } from './UIComponents';
 import { AlertCircle, HelpCircle, Upload } from 'lucide-react';
 import { ChromePicker } from 'react-color';
 import { Link } from 'react-router-dom';
@@ -203,7 +203,7 @@ const CreateStoreSection = () => {
         {storeData ? 'Update Your Store' : 'Create a New Store'}
       </h2>
       <Card>
-        <CardContent className="p-6">
+        <CardContent>
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
@@ -245,33 +245,35 @@ const CreateStoreSection = () => {
                 value={store.tag_line}
                 onChange={handleInputChange}
               />
-              <div className="col-span-2">
-                <label htmlFor="banner_image" className="block text-sm font-medium text-gray-700 mb-2">
-                  Banner Image
+            </div>
+            
+            <div className="space-y-4">
+              <label htmlFor="banner_image" className="block text-sm font-medium text-gray-700">
+                Banner Image
+              </label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <input
+                  type="file"
+                  id="banner_image"
+                  name="banner_image"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="banner_image"
+                  className="cursor-pointer bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <Upload className="w-5 h-5 inline-block mr-2" />
+                  Upload Banner
                 </label>
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="file"
-                    id="banner_image"
-                    name="banner_image"
-                    accept="image/*"
-                    onChange={handleInputChange}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="banner_image"
-                    className="cursor-pointer bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <Upload className="w-5 h-5 inline-block mr-2" />
-                    Upload Banner
-                  </label>
-                  {bannerPreview && (
-                    <img src={bannerPreview} alt="Banner preview" className="h-20 object-cover rounded-md" />
-                  )}
-                </div>
+                {bannerPreview && (
+                  <img src={bannerPreview} alt="Banner preview" className="h-20 object-cover rounded-md" />
+                )}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               <ColorInput
                 label="Primary Color"
                 name="primary_color"
@@ -297,18 +299,21 @@ const CreateStoreSection = () => {
                 helpText="Used for cards and other page components"
               />
             </div>
-            <Alert type="info">
+            
+            <Alert type="info" className="mt-6">
               <p className="font-medium mb-2">Need help choosing colors?</p>
               <p className="mb-4">Use our color palette generator to find the perfect combination for your store.</p>
               <Link to="/cpgenerator" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Go to Color Palette Generator
               </Link>
             </Alert>
+            
             {errors.submit && (
               <Alert type="error">
                 {errors.submit}
               </Alert>
             )}
+            
             <Button onClick={handleSubmit} className="w-full">
               {storeData ? 'Update Store' : 'Create Store'}
             </Button>

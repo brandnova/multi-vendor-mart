@@ -289,6 +289,66 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   );
 };
 
+export const EnhancedPagination = ({ currentPage, totalPages, onPageChange, styles }) => {
+  const MAX_VISIBLE_PAGES = 5;
+
+  const getPageNumbers = () => {
+    if (totalPages <= MAX_VISIBLE_PAGES) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const leftOffset = Math.max(0, Math.min(totalPages - MAX_VISIBLE_PAGES, currentPage - Math.ceil(MAX_VISIBLE_PAGES / 2)));
+    return Array.from({ length: MAX_VISIBLE_PAGES }, (_, i) => i + 1 + leftOffset);
+  };
+
+  const pageNumbers = getPageNumbers();
+
+  return (
+    <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 mt-6">
+      <div className="hidden sm:block">
+        <p className="text-sm" style={styles.text}>
+          Showing page <span className="font-medium">{currentPage}</span> of{' '}
+          <span className="font-medium">{totalPages}</span>
+        </p>
+      </div>
+      <div className="flex flex-1 justify-between sm:justify-end items-center">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed mr-2"
+          style={styles.text}
+        >
+          Previous
+        </button>
+        <div className="hidden sm:flex">
+          {pageNumbers.map((number) => (
+            <button
+              key={number}
+              onClick={() => onPageChange(number)}
+              className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
+                currentPage === number ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-50'
+              } ${number === pageNumbers[0] ? 'rounded-l-md' : ''} ${
+                number === pageNumbers[pageNumbers.length - 1] ? 'rounded-r-md' : ''
+              }`}
+              style={currentPage === number ? styles.primary : styles.text}
+            >
+              {number}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={styles.text}
+        >
+          Next
+        </button>
+      </div>
+    </nav>
+  );
+};
+
 export const Accordion = ({ items }) => {
   const [openIndex, setOpenIndex] = useState(null);
 

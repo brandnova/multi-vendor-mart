@@ -1,3 +1,5 @@
+// App.jsx
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
@@ -7,6 +9,7 @@ import EmailVerificationPage from './pages/EmailVerificationPage';
 import StorePage from './pages/PublicStorePage';
 import ColorPaletteGenerator from './pages/ColorPaletteGenerator';
 import ProfileUpdatePage from './components/VendorDashboard/ProfileUpdatePage';
+import OrderTrackingPage from './pages/OrderTrackingPage';
 
 const App = () => {
   return (
@@ -20,6 +23,8 @@ const App = () => {
         <Route path="/cpgenerator" element={<ColorPaletteGenerator />} />
         <Route path="/stores/:slug" element={<StorePage />} />
         <Route path="/profile" element={<ProfileUpdatePage />} />
+        <Route path="/track-order" element={<OrderTrackingPage />} />
+        <Route path="/track-order/:trackingNumber" element={<OrderTrackingPage />} />
       </Routes>
     </Router>
   );

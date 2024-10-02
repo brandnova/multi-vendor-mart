@@ -1,5 +1,5 @@
 Change slug together with store name
+Preloader styling for individual store pages (from their store theme colors)
 add footer with store info
 
 Resend verification email (Backend)
-Preloader styling for individual store pages (from their store theme colors)

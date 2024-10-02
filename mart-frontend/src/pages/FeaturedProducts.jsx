@@ -1,11 +1,29 @@
-import React from 'react';
-import { Carousel } from 'react-responsive-carousel';
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
+import React, { useState, useEffect, useCallback } from 'react';
 import { API_URL } from '../config/api';
 
 const FeaturedProducts = ({ products, styles }) => {
-  const featuredProducts = products.slice(0, 5); 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleProducts, setVisibleProducts] = useState([]);
+
+  useEffect(() => {
+    const randomProducts = [...products].sort(() => 0.5 - Math.random()).slice(0, 5);
+    setVisibleProducts(randomProducts);
+  }, [products]);
+
+  const nextSlide = useCallback(() => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % visibleProducts.length);
+  }, [visibleProducts]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + visibleProducts.length) % visibleProducts.length);
+  }, [visibleProducts]);
+
+  useEffect(() => {
+    const interval = setInterval(nextSlide, 5000);
+    return () => clearInterval(interval);
+  }, [nextSlide]);
+
+  if (visibleProducts.length === 0) return null;
 
   return (
     <section className="py-16" style={styles.secondary}>
@@ -13,58 +31,62 @@ const FeaturedProducts = ({ products, styles }) => {
         <h2 className="text-3xl font-bold mb-10 text-center" style={styles.text}>
           Featured Products
         </h2>
-        <Carousel
-          showArrows={true}
-          showStatus={false}
-          showThumbs={false}
-          infiniteLoop={true}
-          autoPlay={true}
-          interval={5000}
-          className="bg-white rounded-lg shadow-lg p-6"
-          renderArrowPrev={(onClickHandler, hasPrev, label) =>
-            hasPrev && (
-              <button
-                type="button"
-                onClick={onClickHandler}
-                title={label}
-                style={{ ...styles.primary, position: 'absolute', zIndex: 2, left: 15, top: '50%', width: 40, height: 40, borderRadius: '50%', opacity: 0.8, }}
-                className="hover:opacity-75 transition-opacity duration-300 flex items-center justify-center"
-              >
-                <FaChevronLeft className="text-2xl" />
-              </button>
-            )
-          }
-          renderArrowNext={(onClickHandler, hasNext, label) =>
-            hasNext && (
-              <button
-                type="button"
-                onClick={onClickHandler}
-                title={label}
-                style={{ ...styles.primary, position: 'absolute', zIndex: 2, right: 15, top: '50%', width: 40, height: 40, borderRadius: '50%', opacity: 0.8, }}
-                className="hover:opacity-75 transition-opacity duration-300 flex items-center justify-center"
-              >
-                <FaChevronRight className="text-2xl" />
-              </button>
-            )
-          }
-        >
-          {featuredProducts.map((product) => (
-            <div key={product.id} className="px-4 py-8">
-              <img 
-                src={`${API_URL}${product.image}`}
-                alt={product.name} 
-                className="w-64 h-64 object-cover mx-auto mb-4 rounded-lg shadow-md"
-              />
-              <span className="text-xl font-semibold mb-2" style={styles.text}>
-                {product.name}
-              </span>
-              <p className="text-gray-600 mb-4">{product.description}</p>
-              <span className="text-2xl font-bold" style={styles.text}>
-                ${product.price}
-              </span>
-            </div>
+        <div className="relative overflow-hidden">
+          <div
+            className="flex transition-transform duration-300 ease-in-out"
+            style={{
+              transform: `translateX(-${currentIndex * 100}%)`,
+              width: `${visibleProducts.length * 100}%`,
+            }}
+          >
+            {visibleProducts.map((product) => (
+              <div key={product.id} className="w-full flex-shrink-0 px-4">
+                <div className="rounded-lg shadow-lg p-6 h-full flex flex-col" style={styles.accent}>
+                  <img
+                    src={`${API_URL}${product.image}`}
+                    alt={product.name}
+                    className="w-full h-64 object-cover mb-4 rounded-lg shadow-md"
+                  />
+                  <div className="mx-auto text-center">
+                    <h3 className="text-xl font-semibold mb-2" style={styles.text}>
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 mb-4 flex-grow">{product.description}</p>
+                    <span className="text-2xl font-bold" style={styles.text}>
+                      ₦{product.price}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={prevSlide}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+            style={styles.primary}
+          >
+            &#10094;
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+            style={styles.primary}
+          >
+            &#10095;
+          </button>
+        </div>
+        <div className="flex justify-center mt-4">
+          {visibleProducts.map((_, index) => (
+            <button
+              key={index}
+              className={`h-3 w-3 rounded-full mx-1 ${
+                index === currentIndex ? 'bg-gray-800' : 'bg-gray-300'
+              }`}
+              onClick={() => setCurrentIndex(index)}
+              style={index === currentIndex ? styles.primary : {}}
+            />
           ))}
-        </Carousel>
+        </div>
       </div>
     </section>
   );

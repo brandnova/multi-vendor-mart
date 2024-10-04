@@ -1,6 +1,7 @@
 import React from 'react';
 import { logout } from '../../config/api';
 import { FaHome, FaPlus, FaBox, FaDollarSign, FaExchangeAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { BiTrendingUp } from 'react-icons/bi';
 import { useVendor } from '../../context/VendorContext';
 
 const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
@@ -58,6 +59,13 @@ const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
           label="Orders"
           active={activeItem === 'orders'}
           onClick={() => setActiveSection('orders')}
+          disabled={!storeData}
+        />
+        <SidebarItem
+          icon={BiTrendingUp}
+          label="Sales Analytics"
+          active={activeItem === 'sales-analytics'}
+          onClick={() => setActiveSection('sales-analytics')}
           disabled={!storeData}
         />
         <SidebarItem

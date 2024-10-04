@@ -3,16 +3,16 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth.views import LoginView
-from .models import User, EmailVerificationToken
+from .models import User, EmailVerificationToken, TermsAndConditionsAcceptance
 
 class CustomUserAdmin(UserAdmin):
     list_display = ('email', 'username', 'first_name', 'last_name', 'is_vendor', 'is_email_verified', 'is_staff')
     list_filter = ('is_vendor', 'is_email_verified', 'is_staff', 'is_superuser')
     fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': ('is_vendor', 'is_email_verified')}),
+        ('Custom Fields', {'fields': ('is_vendor', 'is_email_verified', 'accepted_terms')}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Custom Fields', {'fields': ('is_vendor', 'is_email_verified')}),
+        ('Custom Fields', {'fields': ('is_vendor', 'is_email_verified', 'accepted_terms')}),
     )
 
 class CustomAdminAuthenticationForm(AdminAuthenticationForm):
@@ -41,3 +41,5 @@ admin.site.register(User, CustomUserAdmin)
 class EmailVerificationTokenAdmin(admin.ModelAdmin):
     list_display = ('user', 'token', 'created_at')
     search_fields = ('user__email', 'user__username')
+
+admin.site.register(TermsAndConditionsAcceptance)

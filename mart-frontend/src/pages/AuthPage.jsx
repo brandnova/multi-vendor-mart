@@ -1,7 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register, checkEmailVerification } from '../config/api';
-import { Alert, Modal, Input, Button } from '../components/VendorDashboard/UIComponents';
+import { Alert, Modal, Input, Button, Checkbox } from '../components/VendorDashboard/UIComponents';
+import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { FaSpinner } from "react-icons/fa";
+
+// Password strength component
+const PasswordStrengthIndicator = ({ password }) => {
+  const requirements = [
+    { re: /.{8,}/, label: 'At least 8 characters' },
+    { re: /[0-9]/, label: 'At least 1 number' },
+    { re: /[a-z]/, label: 'At least 1 lowercase letter' },
+    { re: /[A-Z]/, label: 'At least 1 uppercase letter' },
+  ];
+
+  return (
+    <div className="mt-2">
+      <h4 className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</h4>
+      {requirements.map((requirement, index) => (
+        <p key={index} className={`text-sm flex items-center ${requirement.re.test(password) ? 'text-green-600' : 'text-red-600'}`}>
+          {requirement.re.test(password) ? <Check size={16} className="mr-2" /> : <X size={16} className="mr-2" />}
+          {requirement.label}
+        </p>
+      ))}
+    </div>
+  );
+};
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,22 +36,39 @@ const AuthPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    acceptTerms: false,
   });
   
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [alertInfo, setAlertInfo] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Enter') {
+        handleSubmit(event);
+      }
+    };
+
+    document.addEventListener('keypress', handleKeyPress);
+
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [formData]);
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    const { name, value, type, checked } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
     if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+      setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
     }
   };
 
@@ -42,6 +83,7 @@ const AuthPage = () => {
       if (!formData.first_name) newErrors.first_name = 'First name is required';
       if (!formData.last_name) newErrors.last_name = 'Last name is required';
       if (!formData.username) newErrors.username = 'Username is required';
+      if (!formData.acceptTerms) newErrors.acceptTerms = 'You must accept the Terms and Conditions';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -52,31 +94,32 @@ const AuthPage = () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    if (isLogin) {
-      try {
+    try {
+      if (isLogin) {
         const verificationStatus = await checkEmailVerification(formData.email);
         if (!verificationStatus.is_verified) {
           navigate('/verify-email', { state: { email: formData.email } });
         } else {
-          const data = await login(formData.email, formData.password);
+          await login(formData.email, formData.password);
           navigate('/dashboard');
         }
-      } catch (error) {
-        console.error('Auth error:', error);
-        setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      try {
+      } else {
         await register(formData);
-        navigate('/verify-email', { state: { email: formData.email } });
-      } catch (error) {
-        console.error('Auth error:', error);
-        setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
-      } finally {
-        setIsLoading(false);
+        setShowModal(true);
       }
+    } catch (error) {
+      console.error('Auth error:', error);
+      setAlertInfo({ type: 'error', message: error.message || 'An error occurred. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    if (field === 'password') {
+      setShowPassword(!showPassword);
+    } else {
+      setShowConfirmPassword(!showConfirmPassword);
     }
   };
 
@@ -142,32 +185,75 @@ const AuthPage = () => {
               error={errors.email}
               required
             />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              error={errors.password}
-              required
-            />
-            {!isLogin && (
+            <div className="relative">
               <Input
-                label="Confirm Password"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
                 onChange={handleInputChange}
-                error={errors.confirmPassword}
+                error={errors.password}
                 required
               />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility('password')}
+                className="absolute inset-y-0 right-0 pr-3 mt-5 flex items-center text-sm leading-5"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+              </button>
+            </div>
+            {!isLogin && <PasswordStrengthIndicator password={formData.password} />}
+            {!isLogin && (
+              <div className="relative">
+                <Input
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  error={errors.confirmPassword}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirmPassword')}
+                  className="absolute inset-y-0 right-0 pr-3 mt-5 flex items-center text-sm leading-5"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+                </button>
+              </div>
             )}
+            {!isLogin && (
+              <div className="flex items-center">
+                <Checkbox
+                  name="acceptTerms"
+                  checked={formData.acceptTerms}
+                  onChange={handleInputChange}
+                  id="accept-terms"
+                />
+                <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-900">
+                  I accept the{' '}
+                  <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:text-blue-500">
+                    Terms and Conditions
+                  </a>
+                </label>
+              </div>
+            )}
+            {errors.acceptTerms && <p className="mt-2 text-sm text-red-600">{errors.acceptTerms}</p>}
+            
             <Button
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || (!isLogin && !formData.acceptTerms)}
               className="w-full flex items-center justify-center"
             >
-              {isLoading ? 'Processing...' : (isLogin ? 'Sign in' : 'Register')}
+              {isLoading ? (
+                <>
+                  Processing <FaSpinner className="ml-2 animate-spin" />
+                </>
+              ) : (
+                isLogin ? 'Sign in' : 'Register'
+              )}
             </Button>
           </form>
         </div>

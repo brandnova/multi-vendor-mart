@@ -1,6 +1,7 @@
 // src/page/OnlineStore.jsx
 
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import FeaturedProducts from './FeaturedProducts';
 import Navbar from '../components/VendorLanding/Navbar';
 import HeroSection from '../components/VendorLanding/HeroSection';
@@ -10,8 +11,8 @@ import BankDetailsModal from '../components/VendorLanding/BankDetailsModal';
 import ContactInfoModal from '../components/VendorLanding/ContactInfoModal';
 import SaveInfoModal from '../components/VendorLanding/SaveInfoModal';
 import OptionsModal from '../components/VendorLanding/OptionsModal';
+import ProductModal from '../components/VendorLanding/ProductModal';
 import { createOrder } from '../config/api';
-
 const OnlineStore = ({ storeData }) => {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -31,6 +32,21 @@ const OnlineStore = ({ storeData }) => {
   const [filteredProducts, setFilteredProducts] = useState(storeData.products);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const productId = searchParams.get('product');
+    if (productId) {
+      const product = storeData.products.find(p => p.id === parseInt(productId));
+      if (product) {
+        setSelectedProduct(product);
+        setIsProductModalOpen(true);
+      }
+    }
+  }, [location, storeData.products]);
 
   useEffect(() => {
     const filtered = storeData.products.filter(product => {
@@ -213,6 +229,7 @@ const OnlineStore = ({ storeData }) => {
         totalPages={Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)}
         onPageChange={handlePageChange}
         styles={styles}
+        storeSlug={storeData.slug}
       />
 
       <ShoppingCart
@@ -255,6 +272,14 @@ const OnlineStore = ({ storeData }) => {
         currentOrder={currentOrder}
         styles={styles}
         onStartNewOrder={handleStartNewOrder}
+      />
+
+      <ProductModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        product={selectedProduct}
+        addToCart={addToCart}
+        styles={styles}
       />
     </div>
   );

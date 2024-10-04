@@ -3,8 +3,8 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-export const API_URL = 'https://mv.coursearena.com.ng';
-// export const API_URL = 'http://localhost:8000';
+// export const API_URL = 'https://mv.coursearena.com.ng';
+export const API_URL = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -96,7 +96,10 @@ export const logout = async () => {
 
 export const register = async (userData) => {
   try {
-    const response = await api.post('/accounts/register/', userData);
+    const response = await api.post('/accounts/register/', {
+      ...userData,
+      accepted_terms: userData.acceptTerms
+    });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('An error occurred during registration');
@@ -236,6 +239,5 @@ export const updateBankDetail = (id, data) => api.put(`/stores/bank-details/${id
 export const deleteBankDetail = (id) => api.delete(`/stores/bank-details/${id}/`);
 export const getOrders = () => cacheGet('/orders/list/');
 export const getOrderDetails = (id) => cacheGet(`/orders/${id}/`);
-// export const deleteOrder = (id) => api.delete(`/orders/${id}/delete/`);
 
 export default api;

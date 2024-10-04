@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
-from .models import EmailVerificationToken
+from .models import EmailVerificationToken, TermsAndConditionsAcceptance
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
@@ -22,7 +22,18 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        # Create the user
         user = serializer.save()
+
+        # Save T&C acceptance
+        accepted_terms = serializer.validated_data.get('accepted_terms', False)
+        if accepted_terms:
+            TermsAndConditionsAcceptance.objects.create(
+                user=user,
+                accepted_at=timezone.now()
+            )
+
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "message": "User created successfully. Please check your email to verify your account."

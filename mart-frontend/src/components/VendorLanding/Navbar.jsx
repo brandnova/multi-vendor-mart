@@ -63,11 +63,11 @@ const Navbar = ({
     { icon: <FaAddressCard className="text-xl" />, onClick: () => setIsContactInfoOpen(true), label: "Contact Info" },
     { icon: <FaUpload className="text-xl" />, onClick: () => setIsOptionsOpen(true), label: "Options" },
     { 
-      icon: <FaShoppingCart className="text-xl" />, 
+      icon: <FaShoppingCart className="text-xl -me-2" />, 
       onClick: () => setIsCartOpen(true),
       label: "Cart",
       badge: cartItemsCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+        <span className="relative -top-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
           {cartItemsCount}
         </span>
       )

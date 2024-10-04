@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-_lxys3*+=lnos&qn7)!m0ire19!bojn-zd#^k2nd7o8o&6denl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['coursearena.com.ng/', 'www.coursearena.com.ng/', 'mv.coursearena.com.ng']
+ALLOWED_HOSTS = ['coursearena.com.ng/', 'www.coursearena.com.ng/', 'mv.coursearena.com.ng', 'localhost']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_cleanup.apps.CleanupConfig',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',

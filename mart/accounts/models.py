@@ -9,6 +9,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_vendor = models.BooleanField(default=True)
     is_email_verified = models.BooleanField(default=False)
+    accepted_terms = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
@@ -26,6 +27,18 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+
+class TermsAndConditionsAcceptance(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    accepted_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ('user',)
+
+    def __str__(self):
+        return f"{self.user.username} accepted T&C at {self.accepted_at}"
+
 
 class EmailVerificationToken(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

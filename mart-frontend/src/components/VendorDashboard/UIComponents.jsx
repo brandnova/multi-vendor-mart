@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 export const Card = ({ children, className = '' }) => (
@@ -67,6 +67,29 @@ export const Input = ({ label, name, value, onChange, type = 'text', error, clas
   </div>
 );
 
+export const Checkbox = ({ label, name, checked, onChange, error, className = '' }) => (
+  <div className={`flex items-start ${className}`}>
+    <div className="flex items-center h-5">
+      <input
+        id={name}
+        name={name}
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className={`focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded ${
+          error ? 'border-red-500' : ''
+        }`}
+      />
+    </div>
+    <div className="ml-3 text-sm">
+      <label htmlFor={name} className="font-medium text-gray-700">
+        {label}
+      </label>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  </div>
+);
+
 export const TextArea = ({ label, name, value, onChange, rows = 3, className = '' }) => (
   <div className={className}>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
@@ -122,6 +145,26 @@ export const Select = ({ label, name, value, onChange, children, error, classNam
     {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
   </div>
 );
+
+export const DatePicker = ({ startDate, endDate, onChange }) => {
+  return (
+    <div className="flex items-center space-x-2">
+      <input
+        type="date"
+        value={startDate ? startDate.toISOString().split('T')[0] : ''}
+        onChange={(e) => onChange({ startDate: new Date(e.target.value), endDate })}
+        className="border rounded p-2"
+      />
+      <span>to</span>
+      <input
+        type="date"
+        value={endDate ? endDate.toISOString().split('T')[0] : ''}
+        onChange={(e) => onChange({ startDate, endDate: new Date(e.target.value) })}
+        className="border rounded p-2"
+      />
+    </div>
+  );
+};
 
 export const Modal = ({ isOpen, onClose, children, size = 'md', className = '' }) => {
   if (!isOpen) return null;
@@ -424,3 +467,45 @@ export const Table = ({ headers, data }) => {
     </div>
   );
 };
+
+
+export const Popover = ({ children, content, className = '' }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const popoverRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className={`relative inline-block ${className}`} ref={popoverRef}>
+      <div onClick={() => setIsOpen(!isOpen)}>{children}</div>
+      {isOpen && (
+        <div className="absolute z-10 w-48 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const PopoverTrigger = ({ children, onClick }) => (
+  <div onClick={onClick}>
+    {children}
+  </div>
+);
+
+export const PopoverContent = ({ children, className = '' }) => (
+  <div className={`py-1 ${className}`} role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+    {children}
+  </div>
+);

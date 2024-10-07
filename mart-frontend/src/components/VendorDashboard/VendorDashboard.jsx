@@ -10,6 +10,7 @@ import CreateStoreSection from './CreateStoreSection';
 import ManageProductsSection from './ManageProductsSection';
 import BankDetailsSection from './BankDetailsSection';
 import ManageOrdersSection from './ManageOrdersSection';
+import SalesAnalyticsSection from './SalesAnalyticsSection';
 import ProfileUpdatePage from './ProfileUpdatePage';
 import { Button, Alert } from './UIComponents';
 
@@ -75,6 +76,8 @@ const VendorDashboard = () => {
         return storeData ? <BankDetailsSection /> : null;
       case 'orders':
         return storeData ? <ManageOrdersSection /> : null;
+      case 'sales-analytics':
+        return storeData ? <SalesAnalyticsSection /> : null;
       case 'profile':
         return <ProfileUpdatePage />;
       default:

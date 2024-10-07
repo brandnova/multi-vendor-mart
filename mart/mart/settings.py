@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-from pathlib import Path
 from decouple import config
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,18 +27,20 @@ SECRET_KEY = 'django-insecure-_lxys3*+=lnos&qn7)!m0ire19!bojn-zd#^k2nd7o8o&6denl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['coursearena.com.ng/', 'www.coursearena.com.ng/', 'mv.coursearena.com.ng', 'localhost']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_cleanup.apps.CleanupConfig',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -53,6 +55,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -140,13 +143,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configuration for Gmail
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = config('EMAIL_HOST')
-# EMAIL_PORT = config('EMAIL_PORT', cast=int)
-# EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'  # Default sender for emails
 
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -160,19 +165,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Email configuration for development (console backend)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # React frontend in development
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:5173',  # React frontend in development
+#     'https://brandnova.github.io',
+#     'https://multiv.coursearena.com.ng',
+#     'https://multiv.coursearena.com.ng/,'
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 AUTH_USER_MODEL = 'accounts.User'
 
 # Assuming your React app is running at http://localhost:5173 for local development
-FRONTEND_URL = 'http://localhost:5173'
+FRONTEND_URL = 'https://multiv.coursearena.com.ng'
 
 
 

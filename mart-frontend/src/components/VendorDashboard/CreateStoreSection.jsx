@@ -1,10 +1,75 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, Button, Input, Alert } from './UIComponents';
-import { AlertCircle, HelpCircle, Upload } from 'lucide-react';
-import { ChromePicker } from 'react-color';
+import { AlertCircle, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import * as api from '../../config/api';
+import { SketchPicker } from 'react-color';
+
+const ColorInput = ({ label, name, value, onChange, error, helpText }) => {
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showHelpText, setShowHelpText] = useState(false);
+
+  const handleColorChange = (color) => {
+    onChange({ target: { name, value: color.hex } });
+  };
+
+  return (
+    <div className="flex flex-col space-y-2 relative">
+      <div className="flex items-center space-x-2">
+        <label htmlFor={name} className="text-sm font-medium text-gray-700">
+          {label}
+        </label>
+        <div 
+          className="relative cursor-help"
+          onMouseEnter={() => setShowHelpText(true)}
+          onMouseLeave={() => setShowHelpText(false)}
+        >
+          <AlertCircle className="w-4 h-4 text-gray-400" />
+          {showHelpText && (
+            <div className="absolute z-10 p-2 bg-gray-100 rounded shadow-md text-sm text-gray-700 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48">
+              {helpText}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        <div
+          className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer"
+          style={{ backgroundColor: value }}
+          onClick={() => setShowColorPicker(!showColorPicker)}
+        />
+        <input
+          type="text"
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`flex-grow px-3 py-2 border rounded-md text-sm ${
+            error ? 'border-red-500' : 'border-gray-300'
+          }`}
+          placeholder="#000000"
+        />
+      </div>
+      {showColorPicker && (
+        <div className="absolute z-20 mt-2">
+          <div className="fixed inset-0" onClick={() => setShowColorPicker(false)} />
+          <SketchPicker
+            color={value}
+            onChange={handleColorChange}
+            disableAlpha
+          />
+        </div>
+      )}
+      {error && (
+        <p className="text-red-500 text-xs mt-1 flex items-center">
+          <AlertCircle className="w-4 h-4 mr-1" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+};
 
 const CreateStoreSection = () => {
   const { storeData, setStoreData } = useVendor();
@@ -15,28 +80,13 @@ const CreateStoreSection = () => {
     contact_phone: '',
     tag_line: '',
     primary_color: '#000000',
-    secondary_color: '#FFFFFF',
-    accent_color: '#808080',
+    secondary_color: '#e8e8e8',
+    accent_color: '#FFFFFF',
     banner_image: null,
   });
   const [bannerPreview, setBannerPreview] = useState(null);
   const [errors, setErrors] = useState({});
-  const [showColorPicker, setShowColorPicker] = useState({
-    primary_color: false,
-    secondary_color: false,
-    accent_color: false,
-  });
-  const [showHelpText, setShowHelpText] = useState({
-    primary_color: false,
-    secondary_color: false,
-    accent_color: false,
-  });
-  const colorPickerRefs = {
-    primary_color: useRef(),
-    secondary_color: useRef(),
-    accent_color: useRef(),
-  };
-  const helpTextTimers = useRef({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (storeData) {
@@ -53,19 +103,6 @@ const CreateStoreSection = () => {
       });
       setBannerPreview(storeData.banner_image || null);
     }
-
-    const handleClickOutside = (event) => {
-      Object.entries(colorPickerRefs).forEach(([key, ref]) => {
-        if (ref.current && !ref.current.contains(event.target)) {
-          setShowColorPicker(prev => ({ ...prev, [key]: false }));
-        }
-      });
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, [storeData]);
 
   const handleInputChange = (e) => {
@@ -77,26 +114,6 @@ const CreateStoreSection = () => {
       setStore((prevState) => ({ ...prevState, [name]: value }));
     }
     setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  };
-
-  const handleColorChange = (color, name) => {
-    setStore((prevState) => ({ ...prevState, [name]: color.hex }));
-    setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  };
-
-  const toggleColorPicker = (name) => {
-    setShowColorPicker((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  const showHelpTextWithDelay = (name) => {
-    helpTextTimers.current[name] = setTimeout(() => {
-      setShowHelpText((prev) => ({ ...prev, [name]: true }));
-    }, 1000);
-  };
-
-  const hideHelpText = (name) => {
-    clearTimeout(helpTextTimers.current[name]);
-    setShowHelpText((prev) => ({ ...prev, [name]: false }));
   };
 
   const validateForm = () => {
@@ -119,6 +136,7 @@ const CreateStoreSection = () => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+    setIsSubmitting(true);
   
     try {
       const formData = new FormData();
@@ -136,66 +154,21 @@ const CreateStoreSection = () => {
       }
   
       setStoreData(response);
+      setStore(prevState => ({
+        ...prevState,
+        ...response,
+        banner_image: null
+      }));
+      setBannerPreview(response.banner_image || null);
+      alert(storeData ? 'Store updated successfully!' : 'Store created successfully!');
+      window.location.reload();
     } catch (error) {
       console.error('Error saving store:', error);
       setErrors({ submit: error.response?.data?.detail || 'Failed to save store. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const ColorInput = ({ label, name, value, onChange, error, helpText }) => (
-    <div className="flex flex-col space-y-2 relative">
-      <div className="flex items-center space-x-2">
-        <label htmlFor={name} className="text-sm font-medium text-gray-700">
-          {label}
-        </label>
-        <div className="relative">
-          <HelpCircle
-            className="w-4 h-4 text-gray-400 cursor-help"
-            onMouseEnter={() => showHelpTextWithDelay(name)}
-            onMouseLeave={() => hideHelpText(name)}
-          />
-          {showHelpText[name] && (
-            <div className="absolute z-10 p-2 bg-gray-100 rounded shadow-md text-sm text-gray-700 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48">
-              {helpText}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <div
-          className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer"
-          style={{ backgroundColor: value }}
-          onClick={() => toggleColorPicker(name)}
-        />
-        <input
-          type="text"
-          id={name}
-          name={name}
-          value={value}
-          onChange={onChange}
-          className={`flex-grow px-3 py-2 border rounded-md text-sm ${
-            error ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="#000000"
-        />
-      </div>
-      {showColorPicker[name] && (
-        <div className="absolute z-20 mt-2" ref={colorPickerRefs[name]}>
-          <ChromePicker
-            color={value}
-            onChange={(color) => handleColorChange(color, name)}
-            disableAlpha
-          />
-        </div>
-      )}
-      {error && (
-        <p className="text-red-500 text-xs mt-1 flex items-center">
-          <AlertCircle className="w-4 h-4 mr-1" />
-          {error}
-        </p>
-      )}
-    </div>
-  );
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -204,7 +177,7 @@ const CreateStoreSection = () => {
       </h2>
       <Card>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="Store Name"
@@ -314,8 +287,12 @@ const CreateStoreSection = () => {
               </Alert>
             )}
             
-            <Button onClick={handleSubmit} className="w-full">
-              {storeData ? 'Update Store' : 'Create Store'}
+            <Button 
+              onClick={handleSubmit} 
+              disabled={isSubmitting} 
+              className="w-full"
+            >
+              {isSubmitting ? 'Saving...' : (storeData ? 'Update Store' : 'Create Store')}
             </Button>
           </form>
         </CardContent>

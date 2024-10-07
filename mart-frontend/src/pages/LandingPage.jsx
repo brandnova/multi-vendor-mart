@@ -1,15 +1,16 @@
 // src/pages/LandingPage.jsx
 
 import React, { useState, useEffect } from "react";
-import { FaBars, FaTimes, FaStore, FaShoppingCart, FaChartLine, FaLock, FaRegLightbulb, FaUserFriends } from "react-icons/fa";
+import { FaStore, FaShoppingCart, FaChartLine, FaLock, FaRegLightbulb, FaUserFriends } from "react-icons/fa";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { Link } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { getSiteSettings, getRecentStores } from '../config/api';
+import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import RecentStores from '../components/RecentStores';
 
 const LandingPage = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [siteSettings, setSiteSettings] = useState(null);
   const [recentStores, setRecentStores] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,10 +35,6 @@ const LandingPage = () => {
 
     fetchData();
   }, []);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   if (isLoading) {
     return (
@@ -64,37 +61,7 @@ const LandingPage = () => {
 
   return (
     <div className="font-sans">
-      {/* Navbar */}
-      <nav className="bg-indigo-900 text-white p-4 fixed w-full z-20">
-        <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold">{siteSettings.site_name}</Link>
-          <div className="hidden md:flex space-x-4">
-            <a href="#benefits" className="hover:text-indigo-300 transition duration-300">Benefits</a>
-            <a href="#features" className="hover:text-indigo-300 transition duration-300">Features</a>
-            <a href="#how-it-works" className="hover:text-indigo-300 transition duration-300">How It Works</a>
-            <a href="#testimonials" className="hover:text-indigo-300 transition duration-300">Testimonials</a>
-            <a href="#recent-stores" className="hover:text-indigo-300 transition duration-300">Our Vendors</a>
-          </div>
-          <button className="md:hidden" onClick={toggleMenu}>
-            {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-          </button>
-        </div>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-indigo-800 mt-2 p-4"
-          >
-            <a href="#benefits" className="block py-2 hover:text-indigo-300">Benefits</a>
-            <a href="#features" className="block py-2 hover:text-indigo-300">Features</a>
-            <a href="#how-it-works" className="block py-2 hover:text-indigo-300">How It Works</a>
-            <a href="#testimonials" className="block py-2 hover:text-indigo-300">Testimonials</a>
-            <a href="#recent-stores" className="block py-2 hover:text-indigo-300">Our Vendors</a>
-          </motion.div>
-        )}
-      </nav>
+      <Navbar siteSettings={siteSettings} />
 
       {/* Hero Section */}
       <section className="h-screen bg-gradient-to-r from-indigo-900 via-purple-800 to-indigo-900 text-white pt-52 pb-16 relative overflow-hidden">
@@ -119,9 +86,13 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
+            className="space-x-4"
           >
             <Link to="/auth" className="bg-yellow-400 text-indigo-900 font-bold py-3 px-8 rounded-full hover:bg-yellow-300 transition duration-300">
               Get Started Now
+            </Link>
+            <Link to="/terms-and-conditions" className="bg-transparent border-2 border-white text-white font-bold py-3 px-8 rounded-full hover:bg-white hover:text-indigo-900 transition duration-300">
+              Read Terms and Conditions
             </Link>
           </motion.div>
         </div>
@@ -277,35 +248,7 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-indigo-900 text-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-2xl font-bold mb-2">{siteSettings.site_name}</h3>
-              <p className="text-indigo-200">{siteSettings.tagline}</p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-2">Contact Us</h4>
-              <p className="text-indigo-200">Email: {siteSettings.contact_email}</p>
-              <p className="text-indigo-200">Phone: {siteSettings.contact_phone}</p>
-              <p>{siteSettings.address}</p>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold mb-2">Follow Us</h4>
-              <div className="flex space-x-4">
-                {siteSettings.social_links.map((link, index) => (
-                  <a key={index} href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition duration-300">
-                    <FaStore size={24} />
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 text-center">
-            <p>&copy; {new Date().getFullYear()} {siteSettings.site_name}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer siteSettings={siteSettings} />
     </div>
   );
 };

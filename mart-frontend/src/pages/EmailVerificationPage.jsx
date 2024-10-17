@@ -1,9 +1,8 @@
-// src/pages/EmailVerificationPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { verifyEmail, resendVerificationEmail } from '../config/api';
-import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Modal } from '../components/VendorDashboard/UIComponents';
+import { verifyEmail, resendVerificationEmail, getVerificationSettings } from '../config/api';
+import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Modal, Input } from '../components/VendorDashboard/UIComponents';
+import { FaSpinner } from 'react-icons/fa';
 
 const EmailVerificationPage = () => {
   const { token } = useParams();
@@ -14,16 +13,23 @@ const EmailVerificationPage = () => {
   const [countdown, setCountdown] = useState(0);
   const [email, setEmail] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      verifyEmailToken();
-    } else if (location.state && location.state.email) {
-      setEmail(location.state.email);
-      setStatus('waiting');
-    } else {
-      navigate('/auth');
-    }
+    const initializeVerification = async () => {
+      if (token) {
+        await verifyEmailToken();
+        const settings = await getVerificationSettings();
+        setCountdown(settings.resend_cooldown || 300);
+      } else if (location.state && location.state.email) {
+        setEmail(location.state.email);
+        setStatus('waiting');
+      } else {
+        setStatus('input');
+      }
+    };
+
+    initializeVerification();
   }, [token, navigate, location.state]);
 
   useEffect(() => {
@@ -35,6 +41,7 @@ const EmailVerificationPage = () => {
   }, [countdown]);
 
   const verifyEmailToken = async () => {
+    setIsLoading(true);
     try {
       const response = await verifyEmail(token);
       setStatus('success');
@@ -43,18 +50,29 @@ const EmailVerificationPage = () => {
     } catch (error) {
       setStatus('error');
       setMessage(error.message || 'An unexpected error occurred during verification');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleResendEmail = async () => {
+    if (!email) {
+      setMessage('Please enter your email address.');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      await resendVerificationEmail(email);
+      const response = await resendVerificationEmail(email);
       setStatus('resent');
-      setMessage('Verification email sent successfully. Please check your inbox.');
-      setCountdown(300); // 5 minutes cooldown
+      setMessage(response.message || 'Verification email sent successfully. Please check your inbox.');
+      const settings = await getVerificationSettings();
+      setCountdown(settings.resend_cooldown || 300);
     } catch (error) {
       setStatus('error');
       setMessage(error.message || 'Failed to resend verification email');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,17 +80,32 @@ const EmailVerificationPage = () => {
     switch (status) {
       case 'initial':
       case 'waiting':
+      case 'input':
         return (
           <>
-            <Alert type="info">An activation link was sent to your email. Please check your inbox and click the link to activate your account.</Alert>
+            <Alert type="info">Enter your email address to resend the verification email.</Alert>
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-4"
+            />
             <Button
               onClick={handleResendEmail}
-              disabled={countdown > 0}
-              className="mt-4 w-full"
+              disabled={countdown > 0 || isLoading}
+              className="mt-4 w-full flex items-center justify-center"
             >
-              {countdown > 0
-                ? `Resend email (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')})`
-                : "Didn't get an email? Resend link"}
+              {isLoading ? (
+                <>
+                  <FaSpinner className="animate-spin mr-2" />
+                  Sending...
+                </>
+              ) : countdown > 0 ? (
+                `Resend email (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')})`
+              ) : (
+                "Resend verification email"
+              )}
             </Button>
           </>
         );
@@ -98,8 +131,28 @@ const EmailVerificationPage = () => {
         return (
           <>
             <Alert type="error">{message}</Alert>
-            <Button onClick={handleResendEmail} className="mt-4 w-full">
-              Resend verification email
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-4"
+            />
+            <Button
+              onClick={handleResendEmail}
+              disabled={countdown > 0 || isLoading}
+              className="mt-4 w-full flex items-center justify-center"
+            >
+              {isLoading ? (
+                <>
+                  <FaSpinner className="animate-spin mr-2" />
+                  Sending...
+                </>
+              ) : countdown > 0 ? (
+                `Resend email (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')})`
+              ) : (
+                "Resend verification email"
+              )}
             </Button>
           </>
         );

@@ -1,8 +1,4 @@
-Change slug together with store name
-add footer with store info
-
-Resend verification email (Backend)
 Change/reset password
-product info to display immediately after adding it.
+product info to display immediately after adding it. (Continue v0 chat)
 
 ads

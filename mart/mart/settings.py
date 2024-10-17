@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'orders',
     'email_management',
     'site_settings',
+    'ads',
 ]
 
 MIDDLEWARE = [
@@ -143,25 +144,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configuration for Gmail
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_PORT = config('EMAIL_PORT', cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = config('EMAIL_HOST')
+# EMAIL_PORT = config('EMAIL_PORT', cast=int)
+# EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
 # DEFAULT_FROM_EMAIL = 'your-email@gmail.com'  # Default sender for emails
 
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'localhost'
-# EMAIL_PORT = 1025
-# EMAIL_USE_TLS = False  # MailHog does not use TLS by default
-# EMAIL_USE_SSL = False  # MailHog does not use SSL by default
-# EMAIL_HOST_USER = ''
-# EMAIL_HOST_PASSWORD = ''
-# DEFAULT_FROM_EMAIL = 'from@eg.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False  # MailHog does not use TLS by default
+EMAIL_USE_SSL = False  # MailHog does not use SSL by default
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'from@eg.com'
 
 
 # Email configuration for development (console backend)
@@ -182,8 +183,10 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'accounts.User'
 
-# Assuming your React app is running at http://localhost:5173 for local development
-FRONTEND_URL = 'https://multiv.coursearena.com.ng'
+# Your Frontend URL
+
+# FRONTEND_URL = 'https://multiv.coursearena.com.ng'
+FRONTEND_URL = 'http://localhost:5173'
 
 
 

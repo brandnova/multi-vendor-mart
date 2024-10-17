@@ -2,17 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register, checkEmailVerification } from '../config/api';
 import { Alert, Modal, Input, Button, Checkbox } from '../components/VendorDashboard/UIComponents';
-import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { Eye, EyeOff, Check, X, Info } from 'lucide-react';
 import { FaSpinner } from "react-icons/fa";
 
 // Password strength component
-const PasswordStrengthIndicator = ({ password }) => {
+const PasswordStrengthIndicator = ({ password, setPasswordValid }) => {
   const requirements = [
     { re: /.{8,}/, label: 'At least 8 characters' },
     { re: /[0-9]/, label: 'At least 1 number' },
     { re: /[a-z]/, label: 'At least 1 lowercase letter' },
     { re: /[A-Z]/, label: 'At least 1 uppercase letter' },
+    { re: /[!@#$%^&*(),.?":{}|<>]/, label: 'At least 1 special character' },
   ];
+
+  useEffect(() => {
+    const isValid = requirements.every(req => req.re.test(password));
+    setPasswordValid(isValid);
+  }, [password, setPasswordValid]);
 
   return (
     <div className="mt-2">
@@ -45,6 +51,7 @@ const AuthPage = () => {
   const [alertInfo, setAlertInfo] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordValid, setPasswordValid] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,9 +70,13 @@ const AuthPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    let newValue = value;
+    if (name === 'username') {
+      newValue = value.replace(/\s/g, ''); // Remove spaces from username
+    }
     setFormData(prevData => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : newValue,
     }));
     if (errors[name]) {
       setErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
@@ -77,12 +88,14 @@ const AuthPage = () => {
     if (!formData.email) newErrors.email = 'Email is required';
     if (!formData.password) newErrors.password = 'Password is required';
     if (!isLogin) {
+      if (!passwordValid) newErrors.password = 'Password does not meet requirements';
       if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
       if (!formData.first_name) newErrors.first_name = 'First name is required';
       if (!formData.last_name) newErrors.last_name = 'Last name is required';
       if (!formData.username) newErrors.username = 'Username is required';
+      if (formData.username.includes(' ')) newErrors.username = 'Username cannot contain spaces';
       if (!formData.acceptTerms) newErrors.acceptTerms = 'You must accept the Terms and Conditions';
     }
     setErrors(newErrors);
@@ -157,6 +170,7 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   error={errors.first_name}
                   required
+                  aria-required="true"
                 />
                 <Input
                   label="Last Name"
@@ -165,15 +179,23 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   error={errors.last_name}
                   required
+                  aria-required="true"
                 />
-                <Input
-                  label="Username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  error={errors.username}
-                  required
-                />
+                <div>
+                  <Input
+                    label="Username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    error={errors.username}
+                    required
+                    aria-required="true"
+                    aria-describedby="username-description"
+                  />
+                  <p id="username-description" className="mt-1 flex text-sm text-gray-500">
+                    <Info className="h-4 w-4 mr-1" /> Username cannot contain spaces.
+                  </p>
+                </div>
               </>
             )}
             <Input
@@ -184,6 +206,7 @@ const AuthPage = () => {
               onChange={handleInputChange}
               error={errors.email}
               required
+              aria-required="true"
             />
             <div className="relative">
               <Input
@@ -194,16 +217,18 @@ const AuthPage = () => {
                 onChange={handleInputChange}
                 error={errors.password}
                 required
+                aria-required="true"
               />
               <button
                 type="button"
                 onClick={() => togglePasswordVisibility('password')}
                 className="absolute inset-y-0 right-0 pr-3 mt-5 flex items-center text-sm leading-5"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
               </button>
             </div>
-            {!isLogin && <PasswordStrengthIndicator password={formData.password} />}
+            {!isLogin && <PasswordStrengthIndicator password={formData.password} setPasswordValid={setPasswordValid} />}
             {!isLogin && (
               <div className="relative">
                 <Input
@@ -214,11 +239,13 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   error={errors.confirmPassword}
                   required
+                  aria-required="true"
                 />
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility('confirmPassword')}
                   className="absolute inset-y-0 right-0 pr-3 mt-5 flex items-center text-sm leading-5"
+                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 >
                   {showConfirmPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
                 </button>
@@ -231,6 +258,7 @@ const AuthPage = () => {
                   checked={formData.acceptTerms}
                   onChange={handleInputChange}
                   id="accept-terms"
+                  aria-required="true"
                 />
                 <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-900">
                   I accept the{' '}
@@ -240,16 +268,17 @@ const AuthPage = () => {
                 </label>
               </div>
             )}
-            {errors.acceptTerms && <p className="mt-2 text-sm text-red-600">{errors.acceptTerms}</p>}
+            {errors.acceptTerms && <p className="mt-2 text-sm text-red-600" role="alert">{errors.acceptTerms}</p>}
             
             <Button
               onClick={handleSubmit}
-              disabled={isLoading || (!isLogin && !formData.acceptTerms)}
+              disabled={isLoading || (!isLogin && (!passwordValid || !formData.acceptTerms))}
               className="w-full flex items-center justify-center"
+              aria-busy={isLoading}
             >
               {isLoading ? (
                 <>
-                  Processing <FaSpinner className="ml-2 animate-spin" />
+                  Processing <FaSpinner className="ml-2 animate-spin" aria-hidden="true" />
                 </>
               ) : (
                 isLogin ? 'Sign in' : 'Register'

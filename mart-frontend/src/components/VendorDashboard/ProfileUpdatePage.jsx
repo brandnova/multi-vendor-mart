@@ -49,7 +49,7 @@ const ProfileUpdatePage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="px-4 py-8">
       <h2 className="text-3xl font-bold text-gray-900 mb-6">Update Your Profile</h2>
       <Card>
         <CardContent className="p-6">

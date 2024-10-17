@@ -1,6 +1,6 @@
-// src/context/VendorContext
+// src/context/VendorContext.js
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import * as api from '../config/api';
 
 const VendorContext = createContext();
@@ -16,11 +16,7 @@ export const VendorProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async () => {
     try {
       setIsLoading(true);
       const profile = await api.getProfile();
@@ -40,7 +36,6 @@ export const VendorProvider = ({ children }) => {
         setOrders(orderList);
       } catch (err) {
         if (err.response && err.response.status === 404) {
-          // Store doesn't exist yet, set other data to empty arrays
           setStoreData(null);
           setProducts([]);
           setBankDetails([]);
@@ -55,7 +50,54 @@ export const VendorProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Add these new functions for updating state after CRUD operations
+  const updateStore = useCallback(async (data) => {
+    try {
+      const updatedStore = await api.updateStore(data);
+      setStoreData(updatedStore);
+    } catch (error) {
+      console.error('Error updating store:', error);
+      throw error;
+    }
+  }, []);
+
+  const updateProduct = useCallback(async (id, data) => {
+    try {
+      const updatedProduct = await api.updateProduct(id, data);
+      setProducts(prevProducts => 
+        prevProducts.map(product => product.id === id ? updatedProduct : product)
+      );
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
+  }, []);
+
+  const addProduct = useCallback(async (data) => {
+    try {
+      const newProduct = await api.createProduct(data);
+      setProducts(prevProducts => [...prevProducts, newProduct]);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      throw error;
+    }
+  }, []);
+
+  const deleteProduct = useCallback(async (id) => {
+    try {
+      await api.deleteProduct(id);
+      setProducts(prevProducts => prevProducts.filter(product => product.id !== id));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      throw error;
+    }
+  }, []);
 
   const value = {
     user,
@@ -71,6 +113,10 @@ export const VendorProvider = ({ children }) => {
     isLoading,
     error,
     fetchInitialData,
+    updateStore,
+    updateProduct,
+    addProduct,
+    deleteProduct,
   };
 
   return <VendorContext.Provider value={value}>{children}</VendorContext.Provider>;

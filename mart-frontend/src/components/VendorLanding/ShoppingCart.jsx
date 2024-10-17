@@ -1,9 +1,23 @@
-import React from 'react';
-import { FaTimes } from "react-icons/fa";
+import React, { useState } from 'react';
+import { FaTimes, FaSpinner } from "react-icons/fa";
 import { API_URL } from '../../config/api';
 
 const ShoppingCart = ({ isOpen, setIsOpen, cartItems, updateQuantity, removeFromCart, calculateTotal, customerInfo, handleCustomerInfoChange, handleCheckout, styles }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   if (!isOpen) return null;
+
+  const onCheckout = async () => {
+    setIsLoading(true);
+    try {
+      await handleCheckout();
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
@@ -31,7 +45,7 @@ const ShoppingCart = ({ isOpen, setIsOpen, cartItems, updateQuantity, removeFrom
                   />
                   <div className="flex-grow">
                     <h3 className="font-semibold" style={styles.primaryText}>{item.name}</h3>
-                    <p className="text-gray-600">${item.price}</p>
+                    <p className="text-gray-600">₦{item.price}</p>
                     <div className="flex items-center mt-2">
                       <button
                         className="text-gray-500 hover:text-gray-700"
@@ -58,7 +72,7 @@ const ShoppingCart = ({ isOpen, setIsOpen, cartItems, updateQuantity, removeFrom
               ))}
               <div className="border-t pt-4 mt-4">
                 <p className="text-xl font-bold mb-4" style={styles.primaryText}>
-                  Total: ${calculateTotal()}
+                  Total: ₦{calculateTotal()}
                 </p>
                 <div className="mb-4">
                   <input
@@ -95,11 +109,23 @@ const ShoppingCart = ({ isOpen, setIsOpen, cartItems, updateQuantity, removeFrom
                   />
                 </div>
                 <button
-                  className="w-full text-white py-2 rounded-full transition duration-300 text-sm"
-                  style={styles.primary}
-                  onClick={handleCheckout}
+                  className="w-full text-white py-2 rounded-full transition duration-300 text-sm flex items-center justify-center"
+                  style={{
+                    ...styles.primary,
+                    opacity: isLoading ? 0.7 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer'
+                  }}
+                  onClick={onCheckout}
+                  disabled={isLoading}
                 >
-                  Checkout
+                  {isLoading ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Checkout'
+                  )}
                 </button>
               </div>
             </>

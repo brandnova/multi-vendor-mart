@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
 from .models import EmailVerificationToken, TermsAndConditionsAcceptance
+from .utils import send_verification_email
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
@@ -89,11 +90,27 @@ class VerifyEmailView(generics.GenericAPIView):
                 "message": f"An unexpected error occurred: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+User = get_user_model()
+
 class ResendVerificationEmailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        user = request.user
+        email = request.data.get('email')
+        if not email:
+            return Response({
+                "status": "error",
+                "message": "Email is required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({
+                "status": "error",
+                "message": "User with this email does not exist."
+            }, status=status.HTTP_404_NOT_FOUND)
+
         if user.is_email_verified:
             return Response({
                 "status": "error",
@@ -111,32 +128,12 @@ class ResendVerificationEmailView(APIView):
         except EmailVerificationToken.DoesNotExist:
             pass
 
-        new_token = EmailVerificationToken.objects.create(user=user)
-        # Send verification email (implement this function)
-        send_verification_email(user, new_token)
+        send_verification_email(user)
 
         return Response({
             "status": "success",
             "message": "Verification email sent successfully."
         }, status=status.HTTP_200_OK)
-
-def send_verification_email(user, token):
-    verification_url = f"{settings.FRONTEND_URL}/verify-email/{token.token}"
-    context = {
-        'user': user,
-        'verification_url': verification_url,
-    }
-    html_message = render_to_string('email/verification_email.html', context)
-    plain_message = strip_tags(html_message)
-    
-    send_mail(
-        'Verify your email',
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        html_message=html_message,
-        fail_silently=False,
-    )
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

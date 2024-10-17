@@ -1,43 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+// ColorInput.jsx
+
+import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
-import { HelpCircle, AlertCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
+import Tooltip from './Tooltip';
 
 const ColorInput = ({ label, name, value, onChange, error, helpText }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showHelpText, setShowHelpText] = useState(false);
-  const colorPickerRef = useRef(null);
-  const helpTextTimer = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
-        setShowColorPicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleColorChange = (color) => {
     onChange({ target: { name, value: color.hex } });
-  };
-
-  const toggleColorPicker = () => {
-    setShowColorPicker(!showColorPicker);
-  };
-
-  const showHelpTextWithDelay = () => {
-    helpTextTimer.current = setTimeout(() => {
-      setShowHelpText(true);
-    }, 1000);
-  };
-
-  const hideHelpText = () => {
-    clearTimeout(helpTextTimer.current);
-    setShowHelpText(false);
   };
 
   return (
@@ -46,24 +18,23 @@ const ColorInput = ({ label, name, value, onChange, error, helpText }) => {
         <label htmlFor={name} className="text-sm font-medium text-gray-700">
           {label}
         </label>
-        <div className="relative">
-          <HelpCircle
-            className="w-4 h-4 text-gray-400 cursor-help"
-            onMouseEnter={showHelpTextWithDelay}
-            onMouseLeave={hideHelpText}
-          />
-          {showHelpText && (
-            <div className="absolute z-10 p-2 bg-gray-100 rounded shadow-md text-sm text-gray-700 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48">
-              {helpText}
-            </div>
-          )}
-        </div>
+        <Tooltip content={helpText}>
+          <HelpCircle className="w-5 h-5 text-gray-400 cursor-help" />
+        </Tooltip>
       </div>
       <div className="flex items-center space-x-2">
         <div
           className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer"
           style={{ backgroundColor: value }}
-          onClick={toggleColorPicker}
+          onClick={() => setShowColorPicker(!showColorPicker)}
+          role="button"
+          aria-label={`Open color picker for ${label}`}
+          tabIndex={0}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setShowColorPicker(!showColorPicker);
+            }
+          }}
         />
         <input
           type="text"
@@ -75,10 +46,15 @@ const ColorInput = ({ label, name, value, onChange, error, helpText }) => {
             error ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="#000000"
+          aria-describedby={`${name}-help`}
         />
       </div>
       {showColorPicker && (
-        <div className="absolute z-20 mt-2" ref={colorPickerRef}>
+        <div className="absolute z-20 mt-2">
+          <div
+            className="fixed inset-0"
+            onClick={() => setShowColorPicker(false)}
+          />
           <SketchPicker
             color={value}
             onChange={handleColorChange}
@@ -87,11 +63,13 @@ const ColorInput = ({ label, name, value, onChange, error, helpText }) => {
         </div>
       )}
       {error && (
-        <p className="text-red-500 text-xs mt-1 flex items-center">
-          <AlertCircle className="w-4 h-4 mr-1" />
+        <p className="text-red-500 text-xs mt-1" id={`${name}-error`}>
           {error}
         </p>
       )}
+      <p className="text-gray-500 text-xs mt-1" id={`${name}-help`}>
+        {helpText}
+      </p>
     </div>
   );
 };

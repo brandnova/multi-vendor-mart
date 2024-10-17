@@ -126,6 +126,22 @@ export const Alert = ({ type = 'info', children, onDismiss, className = '' }) =>
   );
 };
 
+export const AlertTitle = ({ children, className = '' }) => {
+  return (
+    <h5 className={`text-lg font-semibold mb-1 ${className}`}>
+      {children}
+    </h5>
+  );
+};
+
+export const AlertDescription = ({ children, className = '' }) => {
+  return (
+    <div className={`text-sm ${className}`}>
+      {children}
+    </div>
+  );
+};
+
 export const Select = ({ label, name, value, onChange, children, error, className = '' }) => (
   <div className={`mb-4 ${className}`}>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
@@ -347,7 +363,7 @@ export const EnhancedPagination = ({ currentPage, totalPages, onPageChange, styl
   const pageNumbers = getPageNumbers();
 
   return (
-    <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 mt-6">
+    <nav className="flex items-center justify-between border-t border-gray-200 p-4 sm:px-0 mt-6">
       <div className="hidden sm:block">
         <p className="text-sm" style={styles.text}>
           Showing page <span className="font-medium">{currentPage}</span> of{' '}

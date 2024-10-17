@@ -1,10 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import EmailVerificationToken
+from .utils import send_verification_email
 
 User = get_user_model()
 
@@ -24,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
-        self.send_verification_email(user)
+        send_verification_email(user)
         return user
 
     def update(self, instance, validated_data):
@@ -35,17 +32,6 @@ class UserSerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
         return instance
-
-    def send_verification_email(self, user):
-        token = EmailVerificationToken.objects.create(user=user)
-        verification_url = f"{settings.FRONTEND_URL}/verify-email/{token.token}"
-        send_mail(
-            'Verify your email',
-            f'Please click the link to verify your email: {verification_url}',
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):

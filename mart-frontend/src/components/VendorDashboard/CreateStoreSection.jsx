@@ -1,75 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { Card, CardContent, Button, Input, Alert } from './UIComponents';
-import { AlertCircle, Upload } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { HelpCircle } from 'lucide-react';
 import * as api from '../../config/api';
-import { SketchPicker } from 'react-color';
-
-const ColorInput = ({ label, name, value, onChange, error, helpText }) => {
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showHelpText, setShowHelpText] = useState(false);
-
-  const handleColorChange = (color) => {
-    onChange({ target: { name, value: color.hex } });
-  };
-
-  return (
-    <div className="flex flex-col space-y-2 relative">
-      <div className="flex items-center space-x-2">
-        <label htmlFor={name} className="text-sm font-medium text-gray-700">
-          {label}
-        </label>
-        <div 
-          className="relative cursor-help"
-          onMouseEnter={() => setShowHelpText(true)}
-          onMouseLeave={() => setShowHelpText(false)}
-        >
-          <AlertCircle className="w-4 h-4 text-gray-400" />
-          {showHelpText && (
-            <div className="absolute z-10 p-2 bg-gray-100 rounded shadow-md text-sm text-gray-700 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48">
-              {helpText}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <div
-          className="w-10 h-10 rounded-md border border-gray-300 cursor-pointer"
-          style={{ backgroundColor: value }}
-          onClick={() => setShowColorPicker(!showColorPicker)}
-        />
-        <input
-          type="text"
-          id={name}
-          name={name}
-          value={value}
-          onChange={onChange}
-          className={`flex-grow px-3 py-2 border rounded-md text-sm ${
-            error ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="#000000"
-        />
-      </div>
-      {showColorPicker && (
-        <div className="absolute z-20 mt-2">
-          <div className="fixed inset-0" onClick={() => setShowColorPicker(false)} />
-          <SketchPicker
-            color={value}
-            onChange={handleColorChange}
-            disableAlpha
-          />
-        </div>
-      )}
-      {error && (
-        <p className="text-red-500 text-xs mt-1 flex items-center">
-          <AlertCircle className="w-4 h-4 mr-1" />
-          {error}
-        </p>
-      )}
-    </div>
-  );
-};
+import BannerImageUpload from './BannerImageUpload';
+import StoreSlugNotification from './StoreSlugNotification';
+import ColorInput from './ColorInput';
+import Tooltip from './Tooltip';
 
 const CreateStoreSection = () => {
   const { storeData, setStoreData } = useVendor();
@@ -171,14 +108,17 @@ const CreateStoreSection = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="px-4 py-8">
       <h2 className="text-3xl font-bold text-gray-900 mb-6">
         {storeData ? 'Update Your Store' : 'Create a New Store'}
       </h2>
+
+      <StoreSlugNotification storeName={store.name} />
+
       <Card>
         <CardContent>
           <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <Input
                 label="Store Name"
                 name="name"
@@ -186,6 +126,8 @@ const CreateStoreSection = () => {
                 onChange={handleInputChange}
                 error={errors.name}
                 required
+                helpText="Enter the name of your store as you want it to appear to customers"
+                className="w-full"
               />
               <Input
                 label="Location"
@@ -194,6 +136,8 @@ const CreateStoreSection = () => {
                 onChange={handleInputChange}
                 error={errors.location}
                 required
+                helpText="Enter the physical location or area your store serves"
+                className="w-full"
               />
               <Input
                 label="Contact Email"
@@ -203,57 +147,71 @@ const CreateStoreSection = () => {
                 onChange={handleInputChange}
                 error={errors.contact_email}
                 required
+                helpText="Enter an email address where customers can reach you"
+                className="w-full"
               />
               <Input
-                label="Contact Phone"
+                label="Contact Phone Number"
                 name="contact_phone"
                 value={store.contact_phone}
                 onChange={handleInputChange}
                 error={errors.contact_phone}
                 required
+                helpText="Enter a phone number where customers can reach you"
+                className="w-full"
               />
-              <Input
-                label="Tag Line"
-                name="tag_line"
-                value={store.tag_line}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div className="space-y-4">
-              <label htmlFor="banner_image" className="block text-sm font-medium text-gray-700">
-                Banner Image
-              </label>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                <input
-                  type="file"
-                  id="banner_image"
-                  name="banner_image"
-                  accept="image/*"
+              <div className="col-span-full">
+                <div className="flex items-center mb-2">
+                  <label htmlFor="tag_line" className="block text-sm font-medium text-gray-700 mr-2">
+                    Tag Line/Store Description
+                  </label>
+                  <Tooltip content="This brief description will appear prominently on your store page, helping customers understand what makes your store unique.">
+                    <HelpCircle className="w-5 h-5 text-gray-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                <Input
+                  name="tag_line"
+                  value={store.tag_line}
                   onChange={handleInputChange}
-                  className="hidden"
+                  helpText="Enter a short phrase or description to highlight your store (e.g., 'Fresh produce daily' or 'Handmade crafts with love')"
+                  className="w-full"
                 />
-                <label
-                  htmlFor="banner_image"
-                  className="cursor-pointer bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <Upload className="w-5 h-5 inline-block mr-2" />
-                  Upload Banner
-                </label>
-                {bannerPreview && (
-                  <img src={bannerPreview} alt="Banner preview" className="h-20 object-cover rounded-md" />
-                )}
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <BannerImageUpload
+              bannerPreview={bannerPreview}
+              setBannerPreview={setBannerPreview}
+              handleInputChange={handleInputChange}
+            />
+
+            <Alert type="info" className="mt-6">
+              <div className="flex items-center">
+                <HelpCircle className="w-5 h-5 mr-2 text-blue-500" />
+                <p className="font-medium">Color Selection Tips</p>
+              </div>
+              <p className="mt-2">
+                We recommend focusing on the Primary Color, which sets the main theme for your store. 
+                The Secondary and Accent colors will be automatically adjusted to complement your Primary Color choice. 
+                Only adjust these if you have specific design requirements.
+              </p>
+              <p className="mt-2">
+                Need inspiration? Try our color palette generator to find the perfect combination for your store.
+              </p>
+              <a href="/cpgenerator" target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-4 py-2 mt-4 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Go to Color Palette Generator
+              </a>
+            </Alert>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               <ColorInput
                 label="Primary Color"
                 name="primary_color"
                 value={store.primary_color}
                 onChange={handleInputChange}
                 error={errors.primary_color}
-                helpText="Used for navbar, modals, buttons, text color, and badges"
+                helpText="Main theme color for your store's webpage"
+                className="w-full"
               />
               <ColorInput
                 label="Secondary Color"
@@ -261,7 +219,8 @@ const CreateStoreSection = () => {
                 value={store.secondary_color}
                 onChange={handleInputChange}
                 error={errors.secondary_color}
-                helpText="Used for main page background"
+                helpText="Used for page background (automatically adjusted)"
+                className="w-full"
               />
               <ColorInput
                 label="Accent Color"
@@ -269,17 +228,10 @@ const CreateStoreSection = () => {
                 value={store.accent_color}
                 onChange={handleInputChange}
                 error={errors.accent_color}
-                helpText="Used for cards and other page components"
+                helpText="Used for cards and other components (automatically adjusted)"
+                className="w-full"
               />
             </div>
-            
-            <Alert type="info" className="mt-6">
-              <p className="font-medium mb-2">Need help choosing colors?</p>
-              <p className="mb-4">Use our color palette generator to find the perfect combination for your store.</p>
-              <Link to="/cpgenerator" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Go to Color Palette Generator
-              </Link>
-            </Alert>
             
             {errors.submit && (
               <Alert type="error">

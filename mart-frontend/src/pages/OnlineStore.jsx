@@ -26,6 +26,7 @@ const OnlineStore = ({ storeData }) => {
     phone: ""
   });
   const [showSaveInfoModal, setShowSaveInfoModal] = useState(false);
+  const [isUserInfoSaved, setIsUserInfoSaved] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: Infinity });
@@ -68,6 +69,7 @@ const OnlineStore = ({ storeData }) => {
     const savedInfo = localStorage.getItem('customerInfo');
     if (savedInfo) {
       setCustomerInfo(JSON.parse(savedInfo));
+      setIsUserInfoSaved(true);
     }
 
     const savedCart = localStorage.getItem('cartItems');
@@ -146,16 +148,21 @@ const OnlineStore = ({ storeData }) => {
           price: item.price
         }))
       };
-
+  
       const response = await createOrder(storeData.slug, orderData);
       console.log('Order created:', response);
       setCurrentOrder(response);
       setCartItems([]);
       setIsCartOpen(false);
-      setShowSaveInfoModal(true);
+      
+      if (!isUserInfoSaved) {
+        setShowSaveInfoModal(true);
+      } else {
+        setIsOptionsOpen(true);
+      }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to place order. Please try again.');
+      throw error;
     }
   };
 
@@ -173,6 +180,7 @@ const OnlineStore = ({ storeData }) => {
   const handleSaveInfo = (save) => {
     if (save) {
       localStorage.setItem('customerInfo', JSON.stringify(customerInfo));
+      setIsUserInfoSaved(true);
     }
     setShowSaveInfoModal(false);
     setIsOptionsOpen(true);

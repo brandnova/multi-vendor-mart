@@ -86,12 +86,12 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="space-x-4"
+            className="flex justify-center flex-col md:flex-row md:space-x-4"
           >
-            <Link to="/auth" className="bg-yellow-400 text-indigo-900 font-bold py-3 px-8 rounded-full hover:bg-yellow-300 transition duration-300">
+            <Link to="/auth" className="bg-yellow-400 text-indigo-900 font-bold py-3 px-8 my-2 rounded-full hover:bg-yellow-300 transition duration-300">
               Get Started Now
             </Link>
-            <Link to="/terms-and-conditions" className="bg-transparent border-2 border-white text-white font-bold py-3 px-8 rounded-full hover:bg-white hover:text-indigo-900 transition duration-300">
+            <Link to="/terms-and-conditions" className="bg-transparent border-2 border-white text-white font-bold py-3 px-8 my-2 rounded-full hover:bg-white hover:text-indigo-900 transition duration-300">
               Read Terms and Conditions
             </Link>
           </motion.div>

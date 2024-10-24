@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useVendor } from '../../context/VendorContext';
-import { Card, CardContent, CardHeader, Button, Alert, Modal, Select, Spinner } from './UIComponents';
+import { Card, CardContent, CardHeader, Button, Alert, Modal, Select, Spinner } from '../UIComponents';
 import { FaEye, FaTrash, FaFileAlt, FaMoneyBillWave } from "react-icons/fa";
 import { getOrders, getOrderDetails, updateOrderStatus, deleteOrder } from '../../config/api';
 

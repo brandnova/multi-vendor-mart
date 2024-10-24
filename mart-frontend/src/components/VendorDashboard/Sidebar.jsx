@@ -1,13 +1,13 @@
 import React from 'react';
 import { logout } from '../../config/api';
-import { FaHome, FaPlus, FaBox, FaDollarSign, FaExchangeAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { FaHome, FaPlus, FaBox, FaDollarSign, FaExchangeAlt, FaSignOutAlt, FaUser, FaAd, FaLock } from 'react-icons/fa';
 import { BiTrendingUp } from 'react-icons/bi';
 import { useVendor } from '../../context/VendorContext';
 
-const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
+const Sidebar = ({ activeItem, isOpen, setActiveSection, isAdsFree }) => {
   const { storeData } = useVendor();
 
-  const SidebarItem = ({ icon: Icon, label, active, onClick, disabled }) => (
+  const SidebarItem = ({ icon: Icon, label, active, onClick, disabled, requiresAdsFree }) => (
     <div
       className={`px-4 py-3 rounded-md cursor-pointer ${
         active
@@ -21,6 +21,9 @@ const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
       <div className="flex items-center">
         <Icon className="w-6 h-6" />
         <span className={`ml-3 ${isOpen ? 'inline' : 'hidden md:inline'}`}>{label}</span>
+        {requiresAdsFree && !isAdsFree && (
+          <FaLock className="w-4 h-4 ml-2 text-yellow-500" title="Requires Ads-Free Subscription" />
+        )}
       </div>
     </div>
   );
@@ -66,6 +69,14 @@ const Sidebar = ({ activeItem, isOpen, setActiveSection }) => {
           label="Sales Analytics"
           active={activeItem === 'sales-analytics'}
           onClick={() => setActiveSection('sales-analytics')}
+          disabled={!storeData || !isAdsFree}
+          requiresAdsFree={true}
+        />
+        <SidebarItem
+          icon={FaAd}
+          label="Ads Management"
+          active={activeItem === 'ads-management'}
+          onClick={() => setActiveSection('ads-management')}
           disabled={!storeData}
         />
         <SidebarItem

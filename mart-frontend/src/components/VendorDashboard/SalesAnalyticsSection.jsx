@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useVendor } from '../../context/VendorContext';
-import { Card, CardContent, CardHeader, CardTitle, Select } from './UIComponents';
+import { Card, CardContent, CardHeader, CardTitle, Select } from '../UIComponents';
 import { FaNairaSign } from "react-icons/fa6";
 import { Package, ShoppingCart, TrendingUp } from 'lucide-react';
 import { 

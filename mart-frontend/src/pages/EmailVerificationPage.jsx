@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { verifyEmail, resendVerificationEmail, getVerificationSettings } from '../config/api';
-import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Modal, Input } from '../components/VendorDashboard/UIComponents';
+import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Modal, Input } from '../components/UIComponents';
 import { FaSpinner } from 'react-icons/fa';
 
 const EmailVerificationPage = () => {

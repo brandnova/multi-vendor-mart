@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVendor } from '../../context/VendorContext';
-import { Card, CardContent, CardHeader, Button, Input, Alert } from '../VendorDashboard/UIComponents';
+import { Card, CardContent, CardHeader, Button, Input, Alert } from '../UIComponents';
 import * as api from '../../config/api';
 
 const ProfileUpdatePage = () => {

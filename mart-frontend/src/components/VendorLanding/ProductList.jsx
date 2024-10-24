@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { API_URL } from '../../config/api';
-import { EnhancedPagination } from '../VendorDashboard/UIComponents';
+import { EnhancedPagination } from '../UIComponents';
 import ProductModal from './ProductModal';
 import ShareModal from './ShareModal';
 import { FaShare } from "react-icons/fa";

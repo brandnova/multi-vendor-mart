@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import AdConfiguration, AdsFreeSubscription, PaymentSession
 
-# Register your models here.
+admin.site.register(AdConfiguration)
+admin.site.register(AdsFreeSubscription)
+admin.site.register(PaymentSession)

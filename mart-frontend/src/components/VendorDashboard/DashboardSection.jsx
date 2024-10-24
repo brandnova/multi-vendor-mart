@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { FaNairaSign } from "react-icons/fa6";
-import { Card, CardContent, CardHeader, CardTitle, Button } from './UIComponents';
-import { MapPin, Package, ShoppingCart, Mail, Phone, ExternalLink, Calendar, X } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button } from '../UIComponents';
+import {  Package, ShoppingCart, ExternalLink, Calendar, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { checkAdsFreeStatus } from '../../config/api';
+import BannerAdSection from './BannerAdSection';
 
 const STATUS_CHOICES = [
   { value: 'pending', label: 'Pending' },
@@ -21,6 +23,17 @@ const DashboardSection = () => {
     dateRange: { start: null, end: null },
     selectedProduct: 'all',
   });
+  const [isAdsFree, setIsAdsFree] = useState(false);
+
+  useEffect(() => {
+    const checkAdsFreeSubscription = async () => {
+      if (storeData) {
+        const status = await checkAdsFreeStatus(storeData.slug);
+        setIsAdsFree(status);
+      }
+    };
+    checkAdsFreeSubscription();
+  }, [storeData]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
@@ -51,31 +64,10 @@ const DashboardSection = () => {
 
   return (
     <div className="space-y-6 p-4">
-      <div className="relative h-48 md:h-64 rounded-xl overflow-hidden shadow-lg">
-        <img
-          src={storeData.banner_image || '/placeholder.svg?height=256&width=1024'}
-          alt={`${storeData.name} banner`}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4 md:p-6">
-          <h1 className="text-2xl md:text-4xl font-bold text-white mb-2">{storeData.name}</h1>
-          <div className="flex flex-col md:flex-row items-start md:items-center text-white/80 space-y-2 md:space-y-0 md:space-x-4">
-            <div className="flex items-center">
-              <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              <span className="text-sm md:text-base">{storeData.location}</span>
-            </div>
-            <div className="flex items-center">
-              <Mail className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              <span className="text-sm md:text-base">{storeData.contact_email}</span>
-            </div>
-            <div className="flex items-center">
-              <Phone className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              <span className="text-sm md:text-base">{storeData.contact_phone}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Store Banner */}
+      <BannerAdSection storeData={storeData} isAdsFree={isAdsFree} />
 
+      {/* Dashboard Overview and Store Link */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-800">Dashboard Overview</h2>
         <Link

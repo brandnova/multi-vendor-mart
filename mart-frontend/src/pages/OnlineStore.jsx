@@ -12,7 +12,9 @@ import ContactInfoModal from '../components/VendorLanding/ContactInfoModal';
 import SaveInfoModal from '../components/VendorLanding/SaveInfoModal';
 import OptionsModal from '../components/VendorLanding/OptionsModal';
 import ProductModal from '../components/VendorLanding/ProductModal';
-import { createOrder } from '../config/api';
+import { createOrder, fetchAds, initiatePayment, checkAdsFreeStatus } from '../config/api';
+import { AdComponent, AdsFreeButton, WithAdsFreeCheck } from '../components/AdComponents';
+
 const OnlineStore = ({ storeData }) => {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -36,6 +38,7 @@ const OnlineStore = ({ storeData }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const location = useLocation();
+  const [isAdsFree, setIsAdsFree] = useState(false);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -96,6 +99,13 @@ const OnlineStore = ({ storeData }) => {
     }
   }, [currentOrder]);
 
+  useEffect(() => {
+    const checkAdsFreeStatus = async () => {
+      const status = await checkAdsFreeStatus(storeData.slug);
+      setIsAdsFree(status);
+    };
+    checkAdsFreeStatus();
+  }, [storeData.slug]);
   
   const addToCart = (product) => {
     const existingItem = cartItems.find((item) => item.id === product.id);
@@ -212,6 +222,15 @@ const OnlineStore = ({ storeData }) => {
     currentPage * ITEMS_PER_PAGE
   );
 
+  const handleAdsFreeSubscribe = async () => {
+    try {
+      const { payment_url } = await initiatePayment(storeData.slug);
+      window.location.href = payment_url;
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+    }
+  };
+
   return (
     <div className="font-sans" style={styles.secondary}>
       <Navbar
@@ -227,6 +246,9 @@ const OnlineStore = ({ storeData }) => {
       />
 
       <HeroSection storeData={storeData} />
+      
+      {/* Display header ad if not ads-free */}
+      {!isAdsFree && <AdComponent storeSlug={storeData.slug} placement="header" />}
 
       <FeaturedProducts products={storeData.products} styles={styles} />
 
@@ -239,6 +261,9 @@ const OnlineStore = ({ storeData }) => {
         styles={styles}
         storeSlug={storeData.slug}
       />
+
+      {/* Display mid-page ad if not ads-free */}
+      {!isAdsFree && <AdComponent storeSlug={storeData.slug} placement="mid-page" />}
 
       <ShoppingCart
         isOpen={isCartOpen}

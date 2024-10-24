@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useVendor } from '../../context/VendorContext';
-import { Card, CardContent, Button, Input, Alert } from './UIComponents';
+import { Card, CardContent, Button, Input, Alert } from '../UIComponents';
 import { HelpCircle } from 'lucide-react';
 import * as api from '../../config/api';
 import BannerImageUpload from './BannerImageUpload';
 import StoreSlugNotification from './StoreSlugNotification';
 import ColorInput from './ColorInput';
 import Tooltip from './Tooltip';
+import { AdComponent } from '../AdComponents';
 
 const CreateStoreSection = () => {
   const { storeData, setStoreData } = useVendor();
@@ -109,6 +110,8 @@ const CreateStoreSection = () => {
 
   return (
     <div className="px-4 py-8">
+      <AdComponent storeSlug={storeData?.slug} placement="dashboard" />
+
       <h2 className="text-3xl font-bold text-gray-900 mb-6">
         {storeData ? 'Update Your Store' : 'Create a New Store'}
       </h2>

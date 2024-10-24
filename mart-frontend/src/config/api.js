@@ -3,7 +3,7 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-export const API_URL = 'https://mv.coursearena.com.ng';
+export const API_URL = 'https://api.selacentral.com';
 // export const API_URL = 'http://localhost:8000';
 
 const api = axios.create({
@@ -221,6 +221,36 @@ export const trackOrder = async (trackingNumber) => {
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('An error occurred while tracking the order');
+  }
+};
+
+export const fetchAds = async (storeSlug) => {
+  try {
+    const response = await api.get(`/ads/ad-configurations/?store_slug=${storeSlug}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching ads:', error);
+    return [];
+  }
+};
+
+export const initiatePayment = async (storeSlug) => {
+  try {
+    const response = await api.post('/ads/initiate-payment/', { store_slug: storeSlug });
+    return response.data;
+  } catch (error) {
+    console.error('Error initiating payment:', error);
+    throw error;
+  }
+};
+
+export const checkAdsFreeStatus = async (storeSlug) => {
+  try {
+    const response = await api.get(`/ads/store-ads-free-status/?store_slug=${storeSlug}`);
+    return response.data.is_ads_free;
+  } catch (error) {
+    console.error('Error checking ads-free status:', error);
+    return false;
   }
 };
 

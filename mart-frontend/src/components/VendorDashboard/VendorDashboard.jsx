@@ -1,5 +1,3 @@
-// src/components/VendorDashboard/VendorDashboard.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useVendor } from '../../context/VendorContext';
 import { FaBars, FaUser } from 'react-icons/fa';
@@ -12,12 +10,15 @@ import BankDetailsSection from './BankDetailsSection';
 import ManageOrdersSection from './ManageOrdersSection';
 import SalesAnalyticsSection from './SalesAnalyticsSection';
 import ProfileUpdatePage from './ProfileUpdatePage';
-import { Button, Alert } from './UIComponents';
+import AdsManagementSection from './AdsManagementSection';
+import { Button, Alert } from '../UIComponents';
+import { checkAdsFreeStatus } from '../../config/api';
 
 const VendorDashboard = () => {
   const { user, storeData, isLoading, error } = useVendor();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAdsFree, setIsAdsFree] = useState(false);
   const sidebarRef = useRef(null);
   const contentRef = useRef(null);
 
@@ -34,6 +35,16 @@ const VendorDashboard = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const checkAdsFreeSubscription = async () => {
+      if (storeData) {
+        const status = await checkAdsFreeStatus(storeData.slug);
+        setIsAdsFree(status);
+      }
+    };
+    checkAdsFreeSubscription();
+  }, [storeData]);
 
   if (isLoading) {
     return (
@@ -77,7 +88,13 @@ const VendorDashboard = () => {
       case 'orders':
         return storeData ? <ManageOrdersSection /> : null;
       case 'sales-analytics':
-        return storeData ? <SalesAnalyticsSection /> : null;
+        return storeData && isAdsFree ? <SalesAnalyticsSection /> : (
+          <Alert type="warning">
+            Sales Analytics is only available for ads-free subscribers. Please upgrade to access this feature.
+          </Alert>
+        );
+      case 'ads-management':
+        return storeData ? <AdsManagementSection isAdsFree={isAdsFree} /> : null;
       case 'profile':
         return <ProfileUpdatePage />;
       default:
@@ -100,6 +117,7 @@ const VendorDashboard = () => {
             setActiveSection(section);
             setIsSidebarOpen(false);
           }}
+          isAdsFree={isAdsFree}
         />
       </div>
       
@@ -125,6 +143,8 @@ const VendorDashboard = () => {
                   {activeSection === 'manage-products' && 'Manage Products'}
                   {activeSection === 'bank-details' && 'Bank Details'}
                   {activeSection === 'orders' && 'Orders'}
+                  {activeSection === 'sales-analytics' && 'Sales Analytics'}
+                  {activeSection === 'ads-management' && 'Ads Management'}
                   {activeSection === 'profile' && 'Profile'}
                 </h1>
               </div>

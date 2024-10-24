@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register, checkEmailVerification } from '../config/api';
-import { Alert, Modal, Input, Button, Checkbox } from '../components/VendorDashboard/UIComponents';
+import { Alert, Modal, Input, Button, Checkbox } from '../components/UIComponents';
 import { Eye, EyeOff, Check, X, Info } from 'lucide-react';
 import { FaSpinner } from "react-icons/fa";
 

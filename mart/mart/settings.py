@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-from decouple import config
+from decouple import config # type: ignore
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-_lxys3*+=lnos&qn7)!m0ire19!bojn-zd#^k2nd7o8o&6denl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['coursearena.com.ng/', 'www.coursearena.com.ng/', 'mv.coursearena.com.ng', 'localhost']
+ALLOWED_HOSTS = ['backend.selacentral.com', 'www.backend.selacentral.com', 'localhost']
 
 
 # Application definition
@@ -142,6 +142,12 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
+
+# Retrieve the default payment page URL from the .env file
+PAYSTACK_PAYMENT_PAGE_URL = config('DEFAULT_PAYMENT_PAGE_URL', default='https://paystack.com/pay/default-page-slug')
+
 # Email configuration for Gmail
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -171,23 +177,21 @@ DEFAULT_FROM_EMAIL = 'from@eg.com'
 
 # CORS settings
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:5173',  # React frontend in development
-#     'https://brandnova.github.io',
-#     'https://multiv.coursearena.com.ng',
-#     'https://multiv.coursearena.com.ng/,'
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # React frontend in development
+    'https://brandnova.github.io',
+    'https://backend.selacentral.com,'
+]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 
 AUTH_USER_MODEL = 'accounts.User'
 
 # Your Frontend URL
 
-# FRONTEND_URL = 'https://multiv.coursearena.com.ng'
-FRONTEND_URL = 'http://localhost:5173'
-
+FRONTEND_URL = 'https://selacentral.com'
+# FRONTEND_URL = 'http://localhost:5173'
 
 
 

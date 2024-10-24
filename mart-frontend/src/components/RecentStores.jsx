@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, Badge } from "./VendorDashboard/UIComponents";
+import { Card, CardContent, Badge } from "./UIComponents";
 import { Store } from 'lucide-react';
 import { motion } from 'framer-motion';
 

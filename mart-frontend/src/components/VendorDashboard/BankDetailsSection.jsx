@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useVendor } from '../../context/VendorContext';
-import { Card, CardContent, CardHeader, Button, Input } from './UIComponents';
+import { Card, CardContent, CardHeader, Button, Input } from '../UIComponents';
 import { FaPen, FaTrash } from "react-icons/fa";
 import * as api from '../../config/api';
 

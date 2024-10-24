@@ -11,6 +11,7 @@ import StorePage from './pages/PublicStorePage';
 import ColorPaletteGenerator from './pages/ColorPaletteGenerator';
 import ProfileUpdatePage from './components/VendorDashboard/ProfileUpdatePage';
 import OrderTrackingPage from './pages/OrderTrackingPage';
+import PaymentVerificationPage from './pages/PaymentVerificationPage';
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/profile" element={<ProfileUpdatePage />} />
         <Route path="/track-order" element={<OrderTrackingPage />} />
         <Route path="/track-order/:trackingNumber" element={<OrderTrackingPage />} />
+        <Route path="/payment-verification" element={<PaymentVerificationPage />} />
       </Routes>
     </Router>
   );

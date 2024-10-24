@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, AlertTitle, AlertDescription, Button } from './UIComponents';
+import { Alert, AlertTitle, AlertDescription, Button } from '../UIComponents';
 import { InfoIcon, ChevronDown, ChevronUp } from 'lucide-react';
 
 const StoreSlugNotification = ({ storeName }) => {
